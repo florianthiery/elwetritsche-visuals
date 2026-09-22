@@ -65,6 +65,18 @@ Zu Beginn jedes Chats hochladen, am Ende zurückschreiben.
      bekam jeder Verzweigungspunkt auf der senkrechten Linie einen kleinen
      gefüllten Punkt (in der Referenz vorhanden, in der ersten Iteration
      gefehlt).
+- **Zweite Nachbesserung per Pixel-Sampling (geprüft 2026-09-22, nach dem
+  zweiten Commit):** Nutzerhinweis „Münzbild zu klein, Platzierung falsch".
+  Direktes Vermessen der Referenzdatei ergab, dass die rechte Spalte
+  (Terminologiegraph) dort nur 676px breit ist (Wurzelbox `x=1602..2278`
+  auf 2350px Canvas-Breite) — deutlich schmaler, als dieses Skript zuerst
+  annahm (`RIGHT_W=926`), und entsprechend war die linke Spalte
+  (Münzbild + Karten) mit `LEFT_W=1310` zu schmal statt der tatsächlichen
+  ≈1480px (Kartenreihe misst `x=60..1540`). Korrigiert: `LEFT_W=1310→1530`,
+  `GAP=34→40`, Münzbild-Seitenlänge `500px→734px` (Referenz: Avers
+  701px, Revers 717px, Lücke 15px — beides nahe an den neuen Werten),
+  Wurzelbox-Höhe `62px→80px` (Referenz: `y=84..164`, Höhe 80, an vier
+  x-Stichproben identisch reproduziert).
 
 ### A2 Zielbild
 
@@ -213,6 +225,19 @@ Linie ergänzt). Nach dem Fix erneut visuell gegen
 Graphenbereich Ausschnitt für Ausschnitt) — deckt sich jetzt bis auf die
 bewusste Electron→Electrum-Korrektur (siehe `coin_I.yaml`-Kopfkommentar).
 Determinismus erneut geprüft: zwei Läufe, `cmp` byte-identisch.
+
+#### Nachgebessert 2026-09-22, zweiter Durchgang (Spaltenbreiten/Münzgröße)
+
+Nutzerhinweis: Münzbild zu klein, Platzierung falsch — insbesondere die
+Breite. Direktes Vermessen der Referenzdatei (siehe A1 Befunde) zeigte:
+die rechte Spalte war in der ersten Fassung ~250px zu breit und die linke
+Spalte entsprechend zu schmal, was das Münzbild kleiner wirken ließ, als
+es in der Referenz ist. `MARGIN`/`LEFT_W`/`GAP`/Münzbild-Seitenlänge/
+Wurzelbox-Höhe in `py/step_semantics_detail.py` an die vermessenen Werte
+angepasst (siehe A1). Erneut visuell gegen die Referenz abgeglichen
+(Wurzelbox jetzt `x≈1611..2309` gegen Referenz `x=1602..2278` — praktisch
+deckungsgleich). Determinismus erneut geprüft: zwei Läufe, `cmp`
+byte-identisch.
 
 ### S-metadata — Serienmetadaten als YAML
 

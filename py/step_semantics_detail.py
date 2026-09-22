@@ -44,9 +44,15 @@ OUT = vu.OUT_DIRS["semantics-detail"]
 CATEGORY = {"REAL": vu.REAL, "CLASS": vu.CLASS, "TERM": vu.TERM, "OWL": vu.OWL,
             "PROPERTY": vu.PROPERTY, "SUBJECT": vu.SUBJECT, "FICTIONAL": vu.FICTIONAL}
 
+# Column widths, pixel-measured against the reference figure (data/raw/
+# reference/I_semantics_detail.png): the root/relation-node boxes there
+# span x=1602..2278 (width 676) of a 2350-wide canvas, i.e. a far narrower
+# right column -- and correspondingly wider left column, with visibly
+# bigger coin images -- than this script first assumed (PRIMER.md A1
+# Befund, 2026-09-22: user-reported "coin too small / placement off").
 MARGIN = 40
-LEFT_W = 1310
-GAP = 34
+LEFT_W = 1530
+GAP = 40
 RIGHT_X = MARGIN + LEFT_W + GAP
 RIGHT_W = vu.CANVAS_W - MARGIN - RIGHT_X
 
@@ -69,8 +75,8 @@ def _coin_images(parts: list[str], d: dict) -> float:
     """Obverse + reverse side by side, top of the left column. Returns the
     y coordinate of the row below them."""
     img_dir = vu.DATA_COINS / "images"
-    side = 500
-    gap = 40
+    side = 734
+    gap = 15
     total_w = side * 2 + gap
     x0 = MARGIN + (LEFT_W - total_w) / 2
     y0 = MARGIN
@@ -154,7 +160,7 @@ def _terminology_graph(parts: list[str], d: dict) -> None:
     y += 40
 
     root = d["terminology_graph"]["root"]
-    root_h = 62
+    root_h = 80
     parts.append(vu.svg_box(x, y, w, root_h, root["label"], root.get("subtitle", ""),
                              colors=CATEGORY[root["category"]]))
     spine_x = x + 26
