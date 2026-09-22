@@ -77,6 +77,30 @@ Zu Beginn jedes Chats hochladen, am Ende zurückschreiben.
   701px, Revers 717px, Lücke 15px — beides nahe an den neuen Werten),
   Wurzelbox-Höhe `62px→80px` (Referenz: `y=84..164`, Höhe 80, an vier
   x-Stichproben identisch reproduziert).
+- **Geodaten für die Übersichtsgrafik beschafft (geprüft 2026-09-23):**
+  `api.github.com` ist im Sandbox blockiert ("GitHub access to this
+  repository is not enabled for this session"), `raw.githubusercontent.com`
+  dagegen erreichbar. Von dort einmalig `isellsoap/deutschlandGeoJSON`,
+  Datei `4_kreise/4_niedrig.geo.json` (alle deutschen Kreise, niedrige
+  Detailstufe, 434 Features), geladen, auf `NAME_1 == "Rheinland-Pfalz"`
+  gefiltert (35 Kreise) und weiter auf die 16 Kreise eingeschränkt, deren
+  Bounding-Box die der elf Fundort-Koordinaten (+0,12° Rand) überlappt.
+  Ergebnis unter `data/raw/geo/rlp_palatinate_districts.geojson` (25 KB, 16
+  Features) abgelegt; nur noch `name`/`type` als Properties, GADMs übrige
+  Felder (ID_0/ISO/NAME_0/…) verworfen. Lizenz per `curl` auf
+  `README.md`/`LICENSE.md` der Quelle direkt geprüft: Unlicense (Public
+  Domain), zugrunde liegende Geometrie dort selbst
+  [DIVA-GIS](http://www.diva-gis.org/gdata) zugeschrieben — siehe
+  `data/raw/README.md`.
+- **Niedrig-Detailstufe der Kreisgrenzen lässt Lücken an gemeinsamen
+  Grenzen (geprüft 2026-09-23):** die Kreise sind einzeln simplifiziert,
+  nicht als ein zusammenhängendes Netz — benachbarte Grenzlinien treffen
+  sich nach der Simplifizierung nicht immer exakt, was beim reinen Füllen
+  jedes Polygons für sich dünne weiße Lücken entlang mehrerer Nahtstellen
+  zeigte. Fix in `py/step_overview.py`: eine einzige Vollflächen-Füllung
+  der Kartenbox zuerst, die Kreisgrenzen darüber nur als Konturlinie
+  (`fill="none"`) — Lücken damit unabhängig von der Simplifizierungsqualität
+  behoben, ohne die Geometrie selbst zu verändern.
 
 ### A2 Zielbild
 
@@ -132,6 +156,8 @@ Eigenschaften:
 | Site vs. Fundort (Attributkarten + Terminologiegraph) | zwei getrennte Karten statt einer kombinierten: "Site" (reale moderne Gemeinde, mit wd:/geonames:-Kennung) und "Find spot (fictional)" (erfundener Fundkontext, ohne externe Kennung) — entsprechend ein siebtes Relations-Objekt im Terminologiegraphen (`property: "findspot"`, `property_uri: ""`, da `elwetritsch_coin_series_metadata_v3.md` diese Relation selbst als bespoke/nicht-formal ausweist), Farbe TERM/Violett wie alle anderen Nicht-Wurzel-Knoten. Gilt für alle Münzen (Schema-Entscheidung, nicht nur Münze I). | 2026-09-22 |
 | Textausrichtung im Terminologiegraphen | alle Boxen linksbündig, auch die Wurzelbox ("Elwetritsch stater") — bewusste Abweichung von der alten Referenzgrafik (die die Wurzelbox zentriert zeigt), expliziter Nutzerwunsch | 2026-09-23 |
 | Schriftbreiten-Messung | echte Glyphenbreite aus der vendorten Fira-Sans-.ttf via Pillow statt einer geschätzten Zeichen-Durchschnittsbreite — eine flache Schätzung passt nie gleichzeitig zu kurzen Property-Namen und langen Sätzen (`Pillow` als neue Abhängigkeit in `requirements.txt`) | 2026-09-23 |
+| Übersichtsgrafik-Layout | Karte links (moderne Kreisgrenzen, Rheinland-Pfalz/Pfalz), Münzbilder rechts als Kartenraster — **keine** Tabelle; dieselbe kleine Nummer (I–XI) auf Kartenpin und Münzbild verknüpft beide Seiten, expliziter Nutzerwunsch (löst den bisherigen Teil-D-Punkt "Layout noch offen" auf) | 2026-09-23 |
+| Kartenprojektion | einfache äquirechteckige Projektion mit Breitengrad-Kosinuskorrektur, keine weitere Geo-Abhängigkeit (kein cartopy/geopandas/pyproj) — passend zur Repo-Regel "pure Python, minimale Abhängigkeiten"; auf Pfalz-Maßstab (< 1° Breite) ausreichend genau | 2026-09-23 |
 
 ### A5 Was in welchem Chat hochgeladen wird
 
@@ -154,7 +180,7 @@ zitierfähige Produkt.
 | S-I | Semantics-Detail-Seite Münze I (Pilot) | S1 | erledigt 2026-09-22 |
 | S-metadata | Serienmetadaten aller 11 Münzen als `data/raw/manual/series_metadata.yaml` | S1 | erledigt 2026-09-22 |
 | S-II…S-XI | Semantics-Detail-Seiten Münzen II–XI | S-I, S-metadata | teilweise erledigt 2026-09-22 (II, III) |
-| S-overview | Übersichtsgrafik über alle 11 Münzen (Fundort vs. moderne Site, stilisierte Karte) | S1, S-metadata | offen |
+| S-overview | Übersichtsgrafik über alle 11 Münzen (Fundort vs. moderne Site, stilisierte Karte) | S1, S-metadata | erledigt 2026-09-23 (erster Durchlauf, Feedback ausstehend) |
 
 S-metadata, S-II…S-XI und S-overview hängen nur vom Skelett (S1) ab, nicht
 voneinander, und können in beliebiger Reihenfolge angegangen werden; laut A4
@@ -515,14 +541,50 @@ im SVG+resvg-py-Hausstil dieses Repos.
 **Abnahme:** wie S-I; zusätzlich alle Koordinaten/Kennungen aus
 `data/raw/manual/sites.yaml`, keine im Skript fest verdrahteten Werte.
 
-#### Offen
+#### Erledigt 2026-09-23 (erster Durchlauf)
 
-- Kartenbasis (Verwaltungsgrenzen Rheinland-Pfalz) muss als Rohdatei nach
-  `data/raw/` — die Ad-hoc-Vorversion hat sie live von
-  `raw.githubusercontent.com/isellsoap/deutschlandGeoJSON` geladen, was der
-  Kein-Netzzugriff-Regel (A3) widerspricht; für dieses Repo einmalig laden
-  und unter `data/raw/geo/` ablegen.
-- Layout (Karte links/rechts, Tabelle vs. Kartenraster) noch offen.
+Nutzervorgabe (wörtlich): "Hier jedoch rechts bitte alle münzen (ggf mit
+nummer) und dann die moderne karte links... mit allen münzen meine ich
+die münzbilder!" — löst den bisherigen Teil-D-Punkt "Layout noch offen"
+auf: Karte links, Münzbilder (keine Tabelle) rechts, mit Nummerierung.
+
+- `py/step_overview.py` neu angelegt, in `main.py`s `STEPS` registriert,
+  `OUT_DIRS["overview"]` in `elwetritsche_visuals_utils.py` ergänzt.
+  Schreibt `img/overview/series_overview.{svg,png}`.
+- **Kartenbasis:** `data/raw/geo/rlp_palatinate_districts.geojson`
+  (Beschaffung/Lizenz siehe A1 Befunde) — 16 Kreise, als Konturlinie über
+  einer einzigen Vollflächen-Füllung gezeichnet (siehe A1 Befund zu den
+  Lücken durch die Niedrig-Detailstufe).
+- **Projektion:** äquirechteckig mit Breitengrad-Kosinuskorrektur
+  (`_make_projector` in `step_overview.py`), auf die Bounding-Box der elf
+  Fundort-Koordinaten (+0,05° Rand) skaliert und zentriert — keine neue
+  Geo-Abhängigkeit (A4).
+- **Rechte Spalte:** Kartenraster (4 Spalten × 3 Zeilen für elf Münzen),
+  je Zelle das Avers-Bild aus `data/raw/coins/images/`, `elw_id`+`title`
+  und `modern_site` aus `series_metadata.yaml`.
+- **Nummerierung:** derselbe kleine dunkle Kreis-Badge (I–XI) auf
+  Kartenpin und Münzzelle, bewusst *außerhalb* der REAL/CLASS/TERM/
+  PROPERTY-Palette (siehe Moduldocstring) — die Zahl ist ein
+  Querverweis-Index, keine Fiktion/Realität-Aussage; diese Unterscheidung
+  tragen stattdessen die beiden Spaltenüberschriften ("Modern sites
+  (real)" / "Elwetritsch staters I–XI (fictional)").
+- Kartenpin-Beschriftungen (Ortsname) versetzt links/rechts bzw. oben/
+  unten je Fundort (`label_offsets` in `_map()`), da mehrere Fundorte nur
+  wenige Kilometer auseinander liegen (Elmstein/Annweiler/Dahn,
+  Deidesheim/Kallstadt) und ein fester Versatz zu Überlappungen geführt
+  hätte — visuell geprüft, keine Kollisionen.
+- Visuell geprüft: Kartenlücken behoben (vorher/nachher-Vergleich),
+  Kartenpin-Beschriftungen kollisionsfrei, Münzraster-Zellen (u. a. Münze
+  X mit zweizeiligem `modern_site`-Text) laufen nicht über den Kartenrand.
+  Determinismus geprüft: zwei Läufe, `cmp` auf SVG und PNG ohne Ausgabe.
+  `python main.py` baut beide Schritte durch.
+- **Offen/bewusst nicht umgesetzt:** kein Deutschland-/Lage-Insetkärtchen
+  (die Nutzervorgabe nannte nur links/rechts, kein Inset; Rohdaten dafür
+  liegen als Entwurf unter `/tmp/test_geo.json`, nicht ins Repo
+  übernommen, da nicht angefordert); nur das Avers-Bild pro Münze gezeigt,
+  nicht Avers+Revers (Platzgründe im Raster — die Revers-Motive stehen
+  bereits in den Semantics-Detail-Seiten). Beides ausdrücklich als "erster
+  Versuch" präsentiert (Nutzerformulierung), offen für Rückmeldung.
 
 ---
 

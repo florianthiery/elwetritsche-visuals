@@ -56,6 +56,7 @@ CANVAS_H = 1160
 
 OUT_DIRS = {
     "semantics-detail": IMG / "semantics-detail",
+    "overview": IMG / "overview",
 }
 
 

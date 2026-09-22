@@ -32,6 +32,8 @@ sys.path.insert(0, str(ROOT / "py"))
 STEPS: list[tuple[str, str, str]] = [
     ("semantics", "step_semantics_detail",
      "Semantics-detail page per coin: coin image + attribute cards + terminology graph"),
+    ("overview", "step_overview",
+     "Series overview: modern-site map (left) + numbered coin-image grid (right)"),
 ]
 
 
