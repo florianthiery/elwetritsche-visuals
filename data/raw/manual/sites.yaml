@@ -1,0 +1,101 @@
+# Real, verifiable identifiers for the eleven modern Palatinate municipalities
+# the fictional Elwetritsch stater series is nominally "found near" (see
+# ../coins/elwetritsch_coin_series_metadata_v3.md, section "Compact overview").
+#
+# Resolved by hand via web search against wikidata.org and geonames.org
+# (no direct API access from the sandbox this was compiled in -- see
+# PRIMER.md A1 Befunde, 2026-09-22). Coordinates are town-centre positions,
+# not excavation coordinates: the series' own metadata says coordinates are
+# omitted because the archaeological findspots are fictional (see
+# elwetritsch_coin_series_metadata_v3.md, "Shared classification").
+#
+# wikidata / geonames: identifiers only, no full URLs (house convention --
+# expand as https://www.wikidata.org/wiki/<qid> / https://www.geonames.org/<id>).
+
+edenkoben:
+  label: "Edenkoben"
+  district: "Südliche Weinstraße"
+  wikidata: "Q537985"
+  geonames: "2933410"
+  lat: 49.283
+  lon: 8.133
+
+dahn:
+  label: "Dahn"
+  district: "Südwestpfalz"
+  wikidata: "Q570408"
+  geonames: "2939370"
+  lat: 49.150
+  lon: 7.783
+
+annweiler_am_trifels:
+  label: "Annweiler am Trifels"
+  district: "Südliche Weinstraße"
+  wikidata: "Q22953"
+  geonames: "2955951"
+  lat: 49.200
+  lon: 7.967
+
+deidesheim:
+  label: "Deidesheim"
+  district: "Bad Dürkheim"
+  wikidata: "Q22951"
+  geonames: "2938465"
+  lat: 49.4075
+  lon: 8.1864
+
+speyer:
+  label: "Speyer"
+  district: "Speyer (kreisfreie Stadt)"
+  wikidata: "Q6829"
+  geonames: "2830582"
+  lat: 49.3194
+  lon: 8.4311
+
+elmstein:
+  label: "Elmstein"
+  district: "Bad Dürkheim"
+  wikidata: "Q566064"
+  geonames: "2932987"
+  lat: 49.3506
+  lon: 7.9400
+
+busenberg:
+  label: "Busenberg"
+  district: "Südwestpfalz"
+  wikidata: "Q560257"
+  geonames: "2940733"
+  lat: 49.13139
+  lon: 7.82694
+
+kallstadt:
+  label: "Kallstadt"
+  district: "Bad Dürkheim"
+  wikidata: "Q22537"
+  geonames: "6554908"
+  lat: 49.4906
+  lon: 8.1758
+
+germersheim:
+  label: "Germersheim"
+  district: "Germersheim"
+  wikidata: "Q22629"
+  geonames: "2921034"
+  lat: 49.2167
+  lon: 8.3667
+
+neustadt_an_der_weinstrasse:
+  label: "Neustadt an der Weinstraße"
+  district: "Neustadt an der Weinstraße (kreisfreie Stadt)"
+  wikidata: "Q4149"
+  geonames: "2864054"
+  lat: 49.350
+  lon: 8.150
+
+limburgerhof:
+  label: "Limburgerhof"
+  district: "Rhein-Pfalz-Kreis"
+  wikidata: "Q662258"
+  geonames: "2877647"
+  lat: 49.417
+  lon: 8.400

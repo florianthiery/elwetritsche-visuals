@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use these figures or this software, please cite it as below."
+type: software
+title: "elwetritsche-visuals: semantics-detail and overview figures for the fictional Elwetritsch electrum stater series"
+authors:
+  - family-names: Thiery
+    given-names: Florian
+    orcid: "https://orcid.org/0000-0002-3246-3531"
+    affiliation: "LEIZA / Research Squirrel Engineers Network"
+repository-code: "https://github.com/florianthiery/elwetritsche-visuals"
+license: MIT
+version: "2026-09-22"
+date-released: "2026-09-22"
+keywords:
+  - CIDOC-CRM
+  - Linked Open Data
+  - Wikidata
+  - terminology graph
+  - numismatics
+  - fictional dataset
+  - NFDI4Objects
