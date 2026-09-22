@@ -129,6 +129,7 @@ Eigenschaften:
 | Kennungs-Darstellung in den Attributkarten | Klartext in Term-Violett (`#4C1D95`) untereinander (wie im Original-PIL-Bild, per Pixel-Sampling verifiziert — **nicht** Real-Grün, das war die erste, falsche Annahme), **keine** gefüllten Chips — Chips bleiben den CIDOC-Property-Pills im Terminologiegraphen vorbehalten | korrigiert 2026-09-22 |
 | Kennung am Relations-Zielknoten (Terminologiegraph) | kleine Grau-Beschriftung außerhalb/unterhalb der Box, nicht als weißer Untertitel innerhalb — nur der Wurzelknoten (Münze selbst) behält den Untertitel innerhalb der Box | 2026-09-22 |
 | Lizenz der Münzbilder (Vorschlag) | noch nicht bestätigt — AI-generiert vom Repo-Autor, vermutlich CC BY 4.0 wie die übrigen Grafiken; zu bestätigen | Vorschlag 2026-09-22 |
+| Site vs. Fundort (Attributkarten + Terminologiegraph) | zwei getrennte Karten statt einer kombinierten: "Site" (reale moderne Gemeinde, mit wd:/geonames:-Kennung) und "Find spot (fictional)" (erfundener Fundkontext, ohne externe Kennung) — entsprechend ein siebtes Relations-Objekt im Terminologiegraphen (`property: "findspot"`, `property_uri: ""`, da `elwetritsch_coin_series_metadata_v3.md` diese Relation selbst als bespoke/nicht-formal ausweist), Farbe TERM/Violett wie alle anderen Nicht-Wurzel-Knoten. Gilt für alle Münzen (Schema-Entscheidung, nicht nur Münze I). | 2026-09-22 |
 
 ### A5 Was in welchem Chat hochgeladen wird
 
@@ -263,6 +264,57 @@ Nutzerhinweis: Rahmen um die Münzbilder soll weg, und Schriftposition/
   `x=60..1540`).
 - Determinismus erneut geprüft: zwei Läufe, `cmp` byte-identisch.
 
+#### Nachgebessert 2026-09-22, vierter Durchgang (Einzug, Überschrift, Canvas-Höhe, Site/Fundort-Trennung)
+
+Nutzerfeedback (nach Commit des dritten Durchgangs, anhand aller drei
+Münzen): Schrift rechts in den Boxen zu klein; Überschrift soll nur
+„Coin X Graph" lauten; die graue Bezeichner-Beschriftung („wd:Q…") unter
+jeder Box wird von der senkrechten Verbindungslinie durchkreuzt; Site und
+Fundort sollen getrennte Karten/Boxen sein; zu viel weißer Rand unten.
+
+- **Linie durch Bezeichnertext:** Pixel-Vermessung der Referenz zeigt die
+  Spine-Linie bei `x≈1635`, Property-Pill und Bezeichnertext dagegen erst
+  bei `x≈1681` — ein Einzug von rund 80px ab der Box-Kante (`x=1602`), den
+  dieser Nachbau bisher nicht hatte (Bezeichnertext stand bündig mit der
+  Box-Kante, dadurch schien die durchgehend gezeichnete Spine-Linie durch
+  den Text zu laufen). Fix: gemeinsame `content_x = x + 80` für Pill und
+  Bezeichnertext in `_terminology_graph()`; `spine_x` bleibt bei einem
+  kleineren `x+30`-Versatz, sodass beide sich nie horizontal überlappen.
+  Die separat gemeldete Farbabweichung („leicht grau passt nicht zur
+  Referenz") erwies sich beim Nachmessen als exakter Treffer
+  (`#64635e` = `vu.TEXT_MUTED`) — dasselbe Kreuzungsartefakt macht den
+  Text nur optisch "kaputt" wirkend, keine echte Farbabweichung.
+- **Überschrift:** von „Terminology graph (Linked Open Data)" auf
+  `f"Coin {coin_id} Graph"` geändert — wörtliche Nutzervorgabe.
+- **Schriftgrößen rechts:** Knotentitel 16→18, Property-Pill/Chip 14→16,
+  Bezeichnertext 14→16, Legende per neuem `size=16`-Argument (vorher
+  Default 15); `pill_h` 30→32, `id_h` 24→26 entsprechend mitgewachsen.
+- **Canvas-Höhe dynamisch statt fest:** `_cards()` und
+  `_terminology_graph()` geben jetzt ihre jeweilige Bottom-Y zurück;
+  `build()` baut den SVG-Body zunächst in eine Liste, berechnet
+  `canvas_h = max(left_bottom, right_bottom) + MARGIN` und übergibt das
+  erst dann an `vu.svg_open(..., h=canvas_h)` statt der festen
+  `CANVAS_H=1160`. Damit passt sich die Bildhöhe an den tatsächlichen
+  Inhalt jeder Münze an (durch die siebte Relation und die größeren
+  Schriften jetzt `1256` statt der alten festen `1160` — höher, aber ohne
+  Rest-Weißraum darunter, was der eigentliche Nutzerwunsch war).
+- **Site/Fundort-Trennung** (siehe A4): die bisher kombinierte „Find spot
+  (fictional)"-Karte in zwei Karten aufgeteilt — „Site" (reale Gemeinde,
+  behält die wd:/geonames:-Kennungen) und „Find spot (fictional)" (nur
+  noch der erfundene Fundkontext, keine externe Kennung). Im
+  Terminologiegraphen entsprechend eine siebte Relation ergänzt
+  (`property: "findspot"`, `property_uri: ""`, Farbe TERM) zwischen der
+  bestehenden „P53 has former or current location"-Relation und der
+  abschließenden „P62 depicts → Elwetritsch"-Relation. Angewendet auf
+  `coin_I.yaml`, `coin_II.yaml`, `coin_III.yaml` — sechs Karten und sieben
+  Relationen jetzt bei allen drei Münzen identisch strukturiert (nur die
+  Inhalte unterscheiden sich).
+- Alle drei Münzen neu gebaut und visuell geprüft (Übersicht und
+  Graph-Detailausschnitt je Münze) — Einzug behoben, Überschrift korrekt,
+  sechste Karte + siebte (violette) Box vorhanden, kein Rest-Weißraum mehr
+  unterhalb der Legende. Determinismus geprüft: zwei Läufe, `cmp` auf alle
+  sechs Dateien (3× SVG + 3× PNG) ohne Ausgabe.
+
 ### S-metadata — Serienmetadaten als YAML
 
 **Ziel:** alle Prosafelder aus `elwetritsch_coin_series_metadata_v3.md` (pro
@@ -337,6 +389,14 @@ geführt, nicht neu verifiziert).
 `coin_*.yaml`, kein Codeeingriff nötig, wie schon in S-I vorgesehen).
 Determinismus geprüft: zwei Läufe, `cmp` auf alle sechs Dateien (3× SVG +
 3× PNG) ohne Ausgabe.
+
+Im vierten Nachbesserungs-Durchgang zu S-I (siehe dort) auf die
+Site/Fundort-Kartentrennung + siebte Relation nachgezogen, damit alle drei
+Münzen weiterhin identisch strukturiert sind: `coin_II.yaml`'s vorherige
+kombinierte Karte ("near Dahn, Palatinate", real) wurde zu "Site" (Dahn,
+Palatinate) + neuer "Find spot (fictional)"-Karte ("Rock-shelter deposit
+2"); `coin_III.yaml` entsprechend zu "Site" (Annweiler am Trifels) +
+"Find spot (fictional)" (Hoard 7, "Am Sonnenberg").
 
 ### S-overview — Übersichtsgrafik über alle 11 Münzen
 

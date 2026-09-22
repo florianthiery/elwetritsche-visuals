@@ -13,6 +13,10 @@
 # Real-world identifiers (Wikidata QIDs) for this coin, beyond the ones
 # already used for Coin I, resolved by web search against wikidata.org:
 # Palatinate Forest wd:Q707004, sandstone wd:Q13085.
+#
+# Site vs. findspot split into two cards + a seventh graph relation
+# (2026-09-22, user-requested) -- see coin_I.yaml's header for the
+# rationale; applied identically here.
 
 coin_id: "II"
 elw_id: "ELW-02"
@@ -44,12 +48,19 @@ cards:
       - "real regional landscape (Pfälzerwald)"
     chips: ["wd:Q707004", "wd:Q13085"]
 
-  - label: "Find spot (fictional)"
-    value: "near Dahn, Palatinate"
+  - label: "Site"
+    value: "Dahn, Palatinate"
     notes:
-      - "invented find context,"
+      - "real modern municipality,"
       - "Südwestpfalz sandstone country"
     chips: ["wd:Q570408", "geonames:2939370"]
+
+  - label: "Find spot (fictional)"
+    value: "Rock-shelter deposit 2"
+    notes:
+      - "invented find context —"
+      - "no real external identifier"
+    chips: []
 
   - label: "Metallurgical analysis"
     value: "Au ≈47% · Ag ≈51% · Cu ≈2%"
@@ -93,6 +104,11 @@ terminology_graph:
       property_uri: "http://www.cidoc-crm.org/cidoc-crm/P53_has_former_or_current_location"
       target_label: "near Dahn (Palatinate)"
       target_subtitle: "wd:Q570408"
+      category: "TERM"
+    - property: "findspot"
+      property_uri: ""
+      target_label: "Rock-shelter deposit 2, below the Hochstein"
+      target_subtitle: "(fictional findspot)"
       category: "TERM"
     - property: "P62 depicts"
       property_uri: "http://www.cidoc-crm.org/cidoc-crm/P62_depicts"

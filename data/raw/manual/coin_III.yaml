@@ -12,6 +12,10 @@
 # Real-world identifier (Wikidata QID) for this coin, beyond the ones
 # already used for Coin I, resolved by web search against wikidata.org:
 # Trifels Castle wd:Q559202.
+#
+# Site vs. findspot split into two cards + a seventh graph relation
+# (2026-09-22, user-requested) -- see coin_I.yaml's header for the
+# rationale; applied identically here.
 
 coin_id: "III"
 elw_id: "ELW-03"
@@ -43,12 +47,19 @@ cards:
       - "real castle above the findspot (Trifels)"
     chips: ["wd:Q559202", "wd:Q1422342"]
 
-  - label: "Find spot (fictional)"
-    value: "near Annweiler am Trifels, Palatinate"
+  - label: "Site"
+    value: "Annweiler am Trifels, Palatinate"
     notes:
-      - "invented find context,"
+      - "real modern municipality,"
       - "Südliche Weinstraße vineyard margin"
     chips: ["wd:Q22953", "geonames:2955951"]
+
+  - label: "Find spot (fictional)"
+    value: 'Hoard 7, "Am Sonnenberg"'
+    notes:
+      - "invented find context —"
+      - "no real external identifier"
+    chips: []
 
   - label: "Metallurgical analysis"
     value: "Au ≈43% · Ag ≈55% · Cu ≈2%"
@@ -92,6 +103,11 @@ terminology_graph:
       property_uri: "http://www.cidoc-crm.org/cidoc-crm/P53_has_former_or_current_location"
       target_label: "near Annweiler am Trifels (Palatinate)"
       target_subtitle: "wd:Q22953"
+      category: "TERM"
+    - property: "findspot"
+      property_uri: ""
+      target_label: 'Hoard 7, "Am Sonnenberg"'
+      target_subtitle: "(fictional findspot)"
       category: "TERM"
     - property: "P62 depicts"
       property_uri: "http://www.cidoc-crm.org/cidoc-crm/P62_depicts"

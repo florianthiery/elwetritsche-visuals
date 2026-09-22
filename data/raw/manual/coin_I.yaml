@@ -16,6 +16,17 @@
 # figures are explicitly invented (see that file's header); the "real
 # published range" comparison is general numismatic literature on archaic
 # electrum coinage, not a measurement of this (fictional) coin.
+#
+# Site vs. findspot split into two cards (2026-09-22, user-requested): the
+# real modern municipality ("Site") and the invented archaeological find
+# context ("Find spot (fictional)") used to sit in one combined card and
+# graph node; they are now separate, since only the site has a real
+# external identifier. The findspot node's "property" has no formal
+# CIDOC-CRM equivalent -- elwetritsch_coin_series_metadata_v3.md's own
+# "Suggested graph properties" section lists it as its own bespoke
+# relation ("findspot -> separate fictional archaeological findspot"),
+# so `property_uri` is left empty rather than pointing at a real ontology
+# term that would overstate how formal this relation is.
 
 coin_id: "I"
 elw_id: "ELW-01"
@@ -47,12 +58,19 @@ cards:
       - "Palatinate viticulture imagery"
     chips: ["wd:Q22553", "wd:Q1422342"]
 
-  - label: "Find spot (fictional)"
-    value: "near Edenkoben, Palatinate"
+  - label: "Site"
+    value: "Edenkoben, Palatinate"
     notes:
-      - "invented find context,"
+      - "real modern municipality,"
       - "Südliche Weinstraße wine region"
     chips: ["wd:Q537985", "geonames:2933410"]
+
+  - label: "Find spot (fictional)"
+    value: 'Hoard 3, "Im Letten"'
+    notes:
+      - "invented find context —"
+      - "no real external identifier"
+    chips: []
 
   - label: "Metallurgical analysis"
     value: "Au ≈45% · Ag ≈53% · Cu ≈2%"
@@ -96,6 +114,11 @@ terminology_graph:
       property_uri: "http://www.cidoc-crm.org/cidoc-crm/P53_has_former_or_current_location"
       target_label: "near Edenkoben (Palatinate)"
       target_subtitle: "wd:Q537985"
+      category: "TERM"
+    - property: "findspot"
+      property_uri: ""
+      target_label: 'Hoard 3, "Im Letten"'
+      target_subtitle: "(fictional findspot)"
       category: "TERM"
     - property: "P62 depicts"
       property_uri: "http://www.cidoc-crm.org/cidoc-crm/P62_depicts"

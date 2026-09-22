@@ -91,7 +91,7 @@ def _coin_images(parts: list[str], d: dict) -> float:
     return label_y + 24
 
 
-def _cards(parts: list[str], d: dict, y0: float) -> None:
+def _cards(parts: list[str], d: dict, y0: float) -> float:
     cards = d["cards"]
     n = len(cards)
     card_gap = 22
@@ -154,15 +154,17 @@ def _cards(parts: list[str], d: dict, y0: float) -> None:
                                           italic=True)
             parts.append(block)
 
+    return y0 + card_h
+
 
 # --------------------------------------------------------------------------- #
 # Right column: terminology graph (a vertical spine with branch nodes)
 # --------------------------------------------------------------------------- #
-def _terminology_graph(parts: list[str], d: dict) -> None:
+def _terminology_graph(parts: list[str], d: dict) -> float:
     x, w = RIGHT_X, RIGHT_W
     y = MARGIN
 
-    parts.append(vu.svg_text(x, y + 6, "Terminology graph (Linked Open Data)", size=22,
+    parts.append(vu.svg_text(x, y + 6, f"Coin {d['coin_id']} Graph", size=22,
                               weight=500, color=vu.TEXT_DARK))
     y += 42
 
@@ -170,7 +172,16 @@ def _terminology_graph(parts: list[str], d: dict) -> None:
     root_h = 80
     parts.append(vu.svg_box(x, y, w, root_h, root["label"], root.get("subtitle", ""),
                              colors=CATEGORY[root["category"]], title_size=18, subtitle_size=16))
-    spine_x = x + 26
+    # Spine, pills and the external identifier caption are pixel-measured
+    # against the reference figure (data/raw/reference/I_semantics_detail.
+    # png): its pills AND identifier captions both start flush at
+    # x+80-ish, well clear of the spine at x+33-ish -- this script first
+    # put both flush with the box's own left edge (x+0/x+18), so the
+    # spine line ran straight through the "wd:Q..." caption text in the
+    # gap between boxes (PRIMER.md A1 Befund, 2026-09-22: user-reported
+    # "line goes through the identifier").
+    spine_x = x + 30
+    content_x = x + 80
     spine_top = y + root_h
 
     # Node boxes carry only the title; a persistent identifier (when the
@@ -182,10 +193,10 @@ def _terminology_graph(parts: list[str], d: dict) -> None:
     # "this box names a concept that HAS an identifier").
     relations = d["terminology_graph"]["relations"]
     cursor = spine_top
-    pill_h = 30
+    pill_h = 32
     node_h = 46
     gap_pill_node = 8
-    id_h = 24
+    id_h = 26
     gap_after_node = 18
     for rel in relations:
         pill_y = cursor + 16
@@ -199,28 +210,29 @@ def _terminology_graph(parts: list[str], d: dict) -> None:
     cursor = spine_top
     for rel in relations:
         pill_y = cursor + 16
-        pill_x = spine_x + 18
         branch_y = pill_y + pill_h / 2
         parts.append(f'<line x1="{spine_x:.1f}" y1="{branch_y:.1f}" '
-                      f'x2="{pill_x:.1f}" y2="{branch_y:.1f}" '
+                      f'x2="{content_x:.1f}" y2="{branch_y:.1f}" '
                       f'stroke="{vu.LINE_NEUTRAL}" stroke-width="1.6" marker-end="url(#arrow)"/>')
         parts.append(f'<circle cx="{spine_x:.1f}" cy="{branch_y:.1f}" r="3.5" '
                       f'fill="{vu.LINE_NEUTRAL}"/>')
-        chip, chip_w = vu.svg_chip(pill_x, pill_y, rel["property"], vu.PROPERTY, size=14,
+        chip, chip_w = vu.svg_chip(content_x, pill_y, rel["property"], vu.PROPERTY, size=16,
                                     h=pill_h, align="start", pad=14)
         parts.append(chip)
 
         node_y = pill_y + pill_h + gap_pill_node
         parts.append(vu.svg_box(x, node_y, w, node_h, rel["target_label"], "",
-                                 colors=CATEGORY[rel["category"]], title_size=16))
+                                 colors=CATEGORY[rel["category"]], title_size=18))
         subtitle = rel.get("target_subtitle", "")
         if subtitle:
-            parts.append(vu.svg_text(x, node_y + node_h + 19, subtitle, size=14,
+            parts.append(vu.svg_text(content_x, node_y + node_h + 20, subtitle, size=16,
                                       color=vu.TEXT_MUTED))
         cursor = node_y + node_h + (id_h if subtitle else 0) + gap_after_node
 
     legend_y = spine_bottom + 26
-    parts.append(vu.svg_legend(x, legend_y, vu.CATEGORY_LABELS, col_w=w / len(vu.CATEGORY_LABELS)))
+    parts.append(vu.svg_legend(x, legend_y, vu.CATEGORY_LABELS, col_w=w / len(vu.CATEGORY_LABELS),
+                                size=16))
+    return legend_y + 24
 
 
 # --------------------------------------------------------------------------- #
@@ -231,11 +243,20 @@ def build(coin_yaml: Path, sites: dict) -> list[str]:
     site = sites[d["site_key"]]
     d["_site"] = site
 
+    # Canvas height is fitted to this coin's own content rather than a
+    # fixed constant, so the figure doesn't carry a large blank margin
+    # when a coin's card/graph content is shorter than the tallest coin
+    # in the series (PRIMER.md A1 Befund, 2026-09-22: user-reported
+    # excess white space at the bottom).
+    body: list[str] = []
+    y_after_images = _coin_images(body, d)
+    left_bottom = _cards(body, d, y_after_images)
+    right_bottom = _terminology_graph(body, d)
+    canvas_h = int(round(max(left_bottom, right_bottom) + MARGIN))
+
     parts = [vu.svg_open(f"Elwetritsch stater {d['coin_id']} — {d['title']}: "
-                          "semantics detail")]
-    y_after_images = _coin_images(parts, d)
-    _cards(parts, d, y_after_images)
-    _terminology_graph(parts, d)
+                          "semantics detail", h=canvas_h)]
+    parts.extend(body)
     parts.append(vu.svg_close())
 
     name = f"{d['coin_id']}_semantics_detail"
