@@ -7,9 +7,9 @@ step_overview.py -- series overview: modern sites vs. the coins
 One figure for the whole eleven-coin series, laid out as asked
 (PRIMER.md A4, 2026-09-23): a stylised map of the Palatinate on the
 **left** (Rheinland-Pfalz highlighted within Germany, the Rhine, a
-handful of larger towns for orientation, modern administrative district
-outlines, and a numbered pin at each coin's real modern site from
-``data/raw/manual/sites.yaml``), and a numbered grid of all eleven
+handful of larger towns for orientation, and a numbered pin at each
+coin's real modern site from ``data/raw/manual/sites.yaml``), and a
+numbered grid of all eleven
 coins' actual obverse images on the **right**
 (``data/raw/coins/images/``, captioned from
 ``data/raw/manual/series_metadata.yaml``) -- coin *images*, not a table
@@ -29,10 +29,20 @@ Second round of feedback (2026-09-23), folded in here:
   within Germany (main map fill *and* a small Germany inset, both from
   ``data/raw/geo/germany_states.geojson``), the Rhine
   (``data/raw/geo/rhine.geojson``), and a handful of larger nearby towns
-  (``data/raw/manual/reference_cities.yaml``) -- the district outlines
-  the first pass leaned on alone read as visual noise on their own, so
-  they are now a subtle line layer on top of this fuller picture rather
-  than the map's main content.
+  (``data/raw/manual/reference_cities.yaml``).
+
+Third round of feedback (2026-09-23): the Kreis-level district outlines
+from ``data/raw/geo/rlp_palatinate_districts.geojson`` (the first pass's
+main content, kept as a "subtle" line layer in the second pass) are
+dropped from the map entirely. Even as a subtle line, they were
+independently simplified per district rather than as one shared
+network, so two neighbouring districts' versions of their common border
+rarely land on exactly the same pixels -- at this zoomed-out extent that
+read as doubled, crossing lines rather than a clean boundary. The
+Rheinland-Pfalz/neighbour state fill plus the Rhine and reference towns
+now carry the map's context on their own; the raw file itself is kept
+in ``data/raw/geo/`` for provenance and a possible future re-attempt at
+a coarser detail level, but this step no longer reads it.
 
 The same small numeral badge (I-XI) appears on a site's map pin and on
 its coin's thumbnail, so a reader can match one side to the other
@@ -80,7 +90,6 @@ import elwetritsche_visuals_utils as vu
 
 OUT = vu.OUT_DIRS["overview"]
 GEO_DIR = vu.DATA_RAW / "geo"
-DISTRICTS_PATH = GEO_DIR / "rlp_palatinate_districts.geojson"
 STATES_PATH = GEO_DIR / "germany_states.geojson"
 RHINE_PATH = GEO_DIR / "rhine.geojson"
 
@@ -125,7 +134,6 @@ BADGE_TEXT = "#ffffff"
 # Rhine, and a muted dot for reference towns that are not coin sites.
 LAND_FILL, LAND_STROKE = "#efe6d1", "#b9a877"
 NEIGHBOUR_FILL, NEIGHBOUR_STROKE = "#f6f5f0", "#cdc8b8"
-DISTRICT_STROKE = "#a99a6e"
 RHINE_STROKE = "#7fb2d6"
 CITY_DOT = "#57534a"
 
@@ -145,10 +153,6 @@ def load_series() -> dict:
 
 def load_cities() -> dict:
     return yaml.safe_load((vu.DATA_MANUAL / "reference_cities.yaml").read_text(encoding="utf-8"))
-
-
-def load_districts() -> dict:
-    return json.loads(DISTRICTS_PATH.read_text(encoding="utf-8"))
 
 
 def load_states() -> dict:
@@ -268,18 +272,6 @@ def _states_layer(parts: list[str], states: dict, project, *, highlight: str) ->
                       f'stroke="{stroke}" stroke-width="{sw}"/>')
 
 
-def _districts_layer(parts: list[str], districts: dict, project) -> None:
-    # A subtle line only, no fill of its own -- see module docstring
-    # ("read as visual noise on their own" after the first round of
-    # feedback). No per-district fill also removes the earlier gap issue
-    # from simplified boundaries not quite meeting (round 1's fix): there
-    # is nothing left to leave a gap in.
-    for feature in districts["features"]:
-        path_d = _polygon_path(feature["geometry"], project)
-        parts.append(f'<path d="{path_d}" fill-rule="evenodd" fill="none" '
-                      f'stroke="{DISTRICT_STROKE}" stroke-width="0.9" opacity="0.55"/>')
-
-
 def _rhine_layer(parts: list[str], rhine: dict, project) -> None:
     for feature in rhine["features"]:
         path_d = _line_path(feature["geometry"], project)
@@ -354,7 +346,7 @@ def _north_arrow(parts: list[str], cx: float, cy: float, size: float = 24) -> No
     parts.append(vu.svg_text(cx, base_y + 15, "N", size=12, weight=500, color=vu.TEXT_DARK, anchor="middle"))
 
 
-def _map(parts: list[str], sites: dict, series: dict, cities: dict, districts: dict,
+def _map(parts: list[str], sites: dict, series: dict, cities: dict,
           states: dict, rhine: dict, map_x: float, map_y: float, map_w: float, map_h: float) -> float:
     lons = [s["lon"] for s in sites.values()] + [c["lon"] for c in cities.values()]
     lats = [s["lat"] for s in sites.values()] + [c["lat"] for c in cities.values()]
@@ -368,7 +360,6 @@ def _map(parts: list[str], sites: dict, series: dict, cities: dict, districts: d
                   f'width="{map_w:.1f}" height="{map_h:.1f}" rx="8"/></clipPath></defs>')
     parts.append(f'<g clip-path="url(#{clip_id})">')
     _states_layer(parts, states, project, highlight="Rheinland-Pfalz")
-    _districts_layer(parts, districts, project)
     _rhine_layer(parts, rhine, project)
     _cities_layer(parts, cities, project)
     _sites_layer(parts, sites, series, project)
@@ -425,7 +416,7 @@ def _coin_grid(parts: list[str], series: dict, grid_x: float, grid_y: float, gri
 # --------------------------------------------------------------------------- #
 # Build
 # --------------------------------------------------------------------------- #
-def build(sites: dict, series: dict, cities: dict, districts: dict, states: dict, rhine: dict) -> list[str]:
+def build(sites: dict, series: dict, cities: dict, states: dict, rhine: dict) -> list[str]:
     # The right column's height is computed first: the map (left) must end
     # flush with the bottom of the coin panel (right), not the other way
     # round (user feedback 2026-09-23).
@@ -443,7 +434,7 @@ def build(sites: dict, series: dict, cities: dict, districts: dict, states: dict
     map_y = MARGIN + 42
     caption_reserve = 32  # 26px gap to the caption baseline + 6px below it
     map_h = right_bottom - map_y - caption_reserve
-    map_bottom = _map(body, sites, series, cities, districts, states, rhine,
+    map_bottom = _map(body, sites, series, cities, states, rhine,
                        MARGIN, map_y, MAP_W, map_h)
     caption_y = map_bottom + 26
     body.append(vu.svg_text(MARGIN, caption_y,
@@ -468,10 +459,9 @@ def main() -> list[str]:
     sites = load_sites()
     series = load_series()
     cities = load_cities()
-    districts = load_districts()
     states = load_states()
     rhine = load_rhine()
-    written = build(sites, series, cities, districts, states, rhine)
+    written = build(sites, series, cities, states, rhine)
     for p in written:
         print(f"  wrote {p}")
     return written

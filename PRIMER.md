@@ -150,6 +150,26 @@ Zu Beginn jedes Chats hochladen, am Ende zurückschreiben.
     Neustadt.
   - Determinismus erneut geprüft: zwei Läufe, `cmp` auf SVG und PNG ohne
     Ausgabe. `python main.py` baut beide Schritte durch.
+- **Dritte Nachbesserung der Übersichtsgrafik (geprüft 2026-09-23):**
+  Nutzerfeedback nach Commit des zweiten Durchlaufs: "die gebietsgrenzen
+  überschneiden sich teilweise und sind doppelt". Ursache dieselbe wie
+  beim ursprünglichen Lücken-Problem im ersten Durchlauf (siehe oben),
+  nur diesmal ohne eigene Füllung als Kaschierung sichtbar: die
+  Kreisgrenzen sind einzeln simplifiziert, nicht als gemeinsames Netz —
+  benachbarte Kreise zeichnen ihre gemeinsame Grenze dadurch als zwei
+  knapp nebeneinanderliegende, nicht deckungsgleiche Linien, was bei der
+  ausgezoomten Kartenansicht als "doppelte", sich kreuzende Linien
+  auffiel. Die Bundesland-Fläche (Rheinland-Pfalz-Außengrenze) hat
+  dasselbe Problem grundsätzlich auch, fällt dort aber wegen der viel
+  gröberen Detailstufe kaum auf. Entscheidung: Kreisgrenzen-Ebene ganz
+  entfernt statt weiter zu kaschieren (z. B. per Konfliktauflösung
+  zwischen benachbarten Polygongeometrien) — Rohdatei bleibt unter
+  `data/raw/geo/rlp_palatinate_districts.geojson` liegen (Provenienz /
+  möglicher späterer Versuch mit gröberer Detailstufe), wird aber von
+  `step_overview.py` nicht mehr gelesen. Bundesland-Fläche, Rhein und
+  Referenzstädte tragen die Orientierung jetzt allein.
+  Determinismus erneut geprüft: zwei Läufe, `cmp` auf SVG und PNG ohne
+  Ausgabe. `python main.py` baut beide Schritte durch.
 
 ### A2 Zielbild
 
@@ -209,7 +229,8 @@ Eigenschaften:
 | Kartenprojektion | einfache äquirechteckige Projektion mit Breitengrad-Kosinuskorrektur, keine weitere Geo-Abhängigkeit (kein cartopy/geopandas/pyproj) — passend zur Repo-Regel "pure Python, minimale Abhängigkeiten"; auf Pfalz-Maßstab (< 1° Breite) ausreichend genau | 2026-09-23 |
 | Kartografische Farbpalette (Land/Wasser) | eigene, kleine Palette getrennt von der Mermaid-Knotenfarbpalette (Sandton für Rheinland-Pfalz, helles Grau für Nachbar-Bundesländer, Blau für den Rhein) — eine Landmasse/ein Fluss ist kein Semantik-Knoten, den die Hausfarbpalette abdecken müsste | 2026-09-23 |
 | Kartenhöhe vs. Münzraster | die Karte übernimmt die Höhe des rechten Münzrasters (nicht umgekehrt) und wird per `_cover_bounds()` seitentreu bis zum Boxrand ausgezoomt statt mittig mit Rand zu enden — explizite Nutzerkorrektur zum ersten Durchlauf | 2026-09-23 |
-| Kartenumfang | Kreisgrenzen nur noch als dezente Konturlinie (keine eigene Füllung mehr), stattdessen Bundesland-Fläche (Rheinland-Pfalz hervorgehoben), Rhein, ein paar größere Nachbarstädte, Deutschland-Inset, Nordpfeil, Maßstabsbalken — "die Gebietseinheiten allein sind komisch, eher wie zuvor", löst den ersten Durchlauf ab | 2026-09-23 |
+| Kartenumfang | Kreisgrenzen nur noch als dezente Konturlinie (keine eigene Füllung mehr), stattdessen Bundesland-Fläche (Rheinland-Pfalz hervorgehoben), Rhein, ein paar größere Nachbarstädte, Deutschland-Inset, Nordpfeil, Maßstabsbalken — "die Gebietseinheiten allein sind komisch, eher wie zuvor", löst den ersten Durchlauf ab | überholt 2026-09-23, siehe unten |
+| Kreisgrenzen in der Übersichtskarte | ganz entfernt (weder Fläche noch Konturlinie) — einzeln simplifizierte Kreis-Geometrien erzeugten beim gemeinsamen Rand zweier Nachbar-Kreise sichtbar doppelte, sich kreuzende Linien; Bundesland-Fläche + Rhein + Referenzstädte tragen die Orientierung allein. Rohdatei bleibt im Repo (Provenienz), wird aber nicht mehr gelesen | 2026-09-23 |
 
 ### A5 Was in welchem Chat hochgeladen wird
 
@@ -232,7 +253,7 @@ zitierfähige Produkt.
 | S-I | Semantics-Detail-Seite Münze I (Pilot) | S1 | erledigt 2026-09-22 |
 | S-metadata | Serienmetadaten aller 11 Münzen als `data/raw/manual/series_metadata.yaml` | S1 | erledigt 2026-09-22 |
 | S-II…S-XI | Semantics-Detail-Seiten Münzen II–XI | S-I, S-metadata | teilweise erledigt 2026-09-22 (II, III) |
-| S-overview | Übersichtsgrafik über alle 11 Münzen (Fundort vs. moderne Site, stilisierte Karte) | S1, S-metadata | erledigt 2026-09-23 (zweiter Durchlauf, Feedback ausstehend) |
+| S-overview | Übersichtsgrafik über alle 11 Münzen (Fundort vs. moderne Site, stilisierte Karte) | S1, S-metadata | erledigt 2026-09-23 (dritter Durchlauf, Feedback ausstehend) |
 
 S-metadata, S-II…S-XI und S-overview hängen nur vom Skelett (S1) ab, nicht
 voneinander, und können in beliebiger Reihenfolge angegangen werden; laut A4
@@ -671,6 +692,25 @@ Quellen/Lizenzen).
   verläuft sichtbar durch die Karte; alle sechs Städte lesbar platziert.
   Determinismus geprüft: zwei Läufe, `cmp` auf SVG und PNG ohne Ausgabe.
   `python main.py` baut beide Schritte durch.
+
+#### Erledigt 2026-09-23, dritter Durchlauf (Kreisgrenzen entfernt)
+
+Nutzerfeedback (nach Commit des zweiten Durchlaufs): "die gebietsgrenzen
+überschneiden sich teilweise und sind doppelt". Ursache und Entscheidung
+siehe A1 Befunde/A4 — die Kreisgrenzen-Ebene wurde ganz entfernt statt
+weiter kaschiert (kein Rückfall in den Lücken-Fix aus dem ersten
+Durchlauf, der dasselbe Grundproblem nur an der falschen Stelle
+adressiert hätte). `py/step_overview.py`: `_districts_layer()`,
+`load_districts()`, `DISTRICTS_PATH` und der `districts`-Parameter durch
+`_map()`/`build()`/`main()` vollständig entfernt statt nur die Funktion
+leer zu lassen — kein totes Argument, das eine zukünftige Änderung
+stillschweigend wieder verdrahten könnte. `data/raw/geo/
+rlp_palatinate_districts.geojson` bleibt als Rohdatei liegen (siehe
+`data/raw/README.md`), wird aber von keinem Schritt mehr gelesen.
+Visuell geprüft: keine sich kreuzenden/doppelten Linien mehr, nur noch
+die eine sauberere Rheinland-Pfalz-Außengrenze. Determinismus geprüft:
+zwei Läufe, `cmp` auf SVG und PNG ohne Ausgabe. `python main.py` baut
+beide Schritte durch.
 
 ---
 
