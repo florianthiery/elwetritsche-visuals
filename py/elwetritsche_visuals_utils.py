@@ -190,8 +190,17 @@ def xml_escape(s: str) -> str:
 
 
 def text_width(s: str, size: float = 14) -> float:
-    """Rough width estimate (Fira Sans is close to 0.56*size per character)."""
-    return len(s) * size * 0.56
+    """Rough width estimate. Calibrated 2026-09-22 against a chip caption
+    pixel-measured in the reference figure (data/raw/reference/
+    I_semantics_detail.png: "P53 has former or current location" spans
+    ~271px at this font, i.e. ~0.50*size per character, not the 0.56 this
+    repo started with) -- the old, too-generous factor is what made every
+    property pill read as wider than its text needed, and, combined with
+    the notes captions not being wrapped at all (see ``_cards`` in
+    step_semantics_detail.py), also let long lines run past their card
+    (PRIMER.md A1 Befund, 2026-09-22: user-reported "yellow boxes too
+    long" and "text overflow in boxes")."""
+    return len(s) * size * 0.52
 
 
 def svg_text(x: float, y: float, s: str, *, size: float = 13, weight: int = 400,
@@ -207,12 +216,22 @@ def svg_text(x: float, y: float, s: str, *, size: float = 13, weight: int = 400,
 
 
 def wrap_lines(s: str, max_width: float, size: float) -> list[str]:
-    """Greedy word wrap against the rough Fira Sans width estimate."""
+    """Greedy word wrap against the rough Fira Sans width estimate.
+
+    Wraps a touch earlier than the raw estimate would (a 6% margin on
+    ``max_width``) rather than exactly at it: ``text_width`` is a rough
+    per-character average, and erring towards wrapping one word early is
+    invisible, while erring the other way lets a real line run past its
+    box (PRIMER.md A1 Befund, 2026-09-22: user-reported text overflowing
+    card boxes -- the notes captions that fed this overflow were not even
+    passed through this function before; see ``_cards`` in
+    step_semantics_detail.py)."""
+    budget = max_width * 0.94
     lines: list[str] = []
     current = ""
     for word in s.split():
         trial = f"{current} {word}".strip()
-        if current and text_width(trial, size) > max_width:
+        if current and text_width(trial, size) > budget:
             lines.append(current)
             current = word
         else:
@@ -248,21 +267,30 @@ def svg_chip(x: float, y: float, label: str, colors: dict, *, size: float = 11.5
 
 def svg_box(x: float, y: float, w: float, h: float, title: str, subtitle: str = "",
             *, colors: dict, rx: float = 10, stroke_width: float = 1.4,
-            title_size: float = 16, subtitle_size: float = 16) -> str:
+            title_size: float = 16, subtitle_size: float = 16, align: str = "middle",
+            pad: float = 20) -> str:
     """A category node: filled rounded box, bold title, optional grey
-    subtitle line (used for a persistent identifier)."""
+    subtitle line (used for a persistent identifier).
+
+    ``align="middle"`` (the default, used for the root/coin box) centres
+    the text. ``align="start"`` left-aligns it at ``pad`` from the box's
+    own left edge -- matching how every *relation* node in the reference
+    figure (data/raw/reference/I_semantics_detail.png) sets its title,
+    pixel-measured at ~14px in from the box edge (PRIMER.md A1 Befund,
+    2026-09-22: user-reported the relation nodes should read left-aligned,
+    not centred -- only the root box centres its text there)."""
     fill, stroke, text_color = colors["fill"], colors["stroke"], colors.get("text", "#ffffff")
     parts = [f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{rx}" '
              f'fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"/>']
-    cx = x + w / 2
+    tx = x + pad if align == "start" else x + w / 2
     if subtitle:
-        parts.append(svg_text(cx, y + h / 2 - 5, title, size=title_size, weight=500,
-                               color=text_color, anchor="middle", baseline="central"))
-        parts.append(svg_text(cx, y + h / 2 + 17, subtitle, size=subtitle_size, color=text_color,
-                               anchor="middle", baseline="central", opacity=0.82))
+        parts.append(svg_text(tx, y + h / 2 - 5, title, size=title_size, weight=500,
+                               color=text_color, anchor=align, baseline="central"))
+        parts.append(svg_text(tx, y + h / 2 + 17, subtitle, size=subtitle_size, color=text_color,
+                               anchor=align, baseline="central", opacity=0.82))
     else:
-        parts.append(svg_text(cx, y + h / 2, title, size=title_size, weight=500,
-                               color=text_color, anchor="middle", baseline="central"))
+        parts.append(svg_text(tx, y + h / 2, title, size=title_size, weight=500,
+                               color=text_color, anchor=align, baseline="central"))
     return "\n".join(parts)
 
 

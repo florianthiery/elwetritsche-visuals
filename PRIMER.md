@@ -315,6 +315,60 @@ Fundort sollen getrennte Karten/Boxen sein; zu viel weißer Rand unten.
   unterhalb der Legende. Determinismus geprüft: zwei Läufe, `cmp` auf alle
   sechs Dateien (3× SVG + 3× PNG) ohne Ausgabe.
 
+#### Nachgebessert 2026-09-22, fünfter Durchgang (Linie/Kennung-Abstand in den Karten, Ausrichtung + Breite im Graphen, Text-Überlauf)
+
+Nutzerfeedback (nach Commit des vierten Durchgangs): unten in den
+Attributkarten überschneidet sich die Trennlinie mit der Kennung
+("die Links"); im Terminologiegraphen soll die Schrift linksbündig statt
+zentriert stehen, die gelben Property-Pills seien zu lang, und Text läuft
+teilweise über den Kartenrand hinaus.
+
+- **Trennlinie kreuzt Kennungstext (Karten):** dieselbe Ursache wie beim
+  Graphen im vierten Durchgang, nur diesmal in den Attributkarten: die
+  Trennlinie stand nur 8px über der ersten Kennungszeile — bei 17px
+  Schrift liegt das mitten in der Zeichenhöhe. `_cards()` reserviert jetzt
+  20px mehr zwischen Trennlinie und erster Kennungszeile (Trennlinie
+  bleibt an ihrer Position, die Kennungszeilen rutschen 20px tiefer;
+  `link_area_h` entsprechend um 20px gewachsen, damit der Kartenrand
+  darunter gleich bleibt).
+- **Text-Überlauf in den Karten:** Ursache war nicht in erster Linie die
+  Schriftbreiten-Schätzung, sondern dass die `notes`-Zeilen aus dem YAML
+  *ungeprüft* übernommen wurden — wer die Zeilenumbrüche im YAML gesetzt
+  hatte, musste die Pixelbreite selbst richtig einschätzen, und das ging
+  bei Münze III ("real castle above the findspot (Trifels)", 41 Zeichen)
+  und Münze II ("Südwestpfalz sandstone country" / "Südliche Weinstraße
+  vineyard margin") schief — die Zeile lief über den Kartenrand hinaus.
+  Fix: `notes` wird jetzt zu einem String zusammengefügt und wie `value`
+  durch `wrap_lines()` neu umgebrochen, nicht mehr 1:1 aus dem YAML
+  übernommen.
+- **Schriftbreiten-Schätzung nachgeschärft:** `text_width()` war mit
+  `0.56*size` pro Zeichen kalibriert; ein Pixel-Nachmessen der Referenz
+  ("P53 has former or current location" in `wd:Q537985`s Zeile) ergibt
+  eher `0.50*size` — auf `0.52` gesetzt (Mittelweg, keine Überanpassung
+  an einen einzelnen String). `wrap_lines()` bekommt zusätzlich 6%
+  Sicherheitsspanne (bricht etwas früher um), damit eine Unterschätzung
+  nie wieder zu echtem Überlauf führt, statt nur die Rundung zu
+  verbessern.
+- **Zentriert statt linksbündig (Terminologiegraph):** die Referenz zeigt
+  die Relations-Knoten ("near Edenkoben (Palatinate)", "Dubbeglas (wine
+  glass)", …) links­bündig, nur die Wurzelbox ("Elwetritsch stater") ist
+  zentriert (Pixel-Nachmessen: Kennungstext-Einzug ~14px vom Box-Rand).
+  `svg_box()` in `elwetritsche_visuals_utils.py` bekommt einen neuen
+  `align`-Parameter (`"middle"` Default, `"start"` linksbündig mit `pad`);
+  `_terminology_graph()` übergibt `align="start"` für alle Relations-
+  Knoten, die Wurzelbox bleibt beim Default.
+- **Gelbe Property-Pills zu lang:** direkte Folge derselben zu großzügigen
+  `text_width`-Schätzung plus `pad=14` (Referenz misst ~9–10px) — mit der
+  nachgeschärften Schätzung und `pad=11` in `_terminology_graph()`s
+  `svg_chip`-Aufruf liegen die Pills jetzt nah an der gemessenen
+  Referenzbreite (`"P53 has former or current location"`: Referenz
+  ≈290px, jetzt ≈300px statt vorher ≈333px).
+- Alle drei Münzen neu gebaut; Kartenzeile und Graph-Ausschnitt je Münze
+  visuell geprüft — keine Linie kreuzt mehr Text, keine Karte läuft mehr
+  über, Relations-Knoten linksbündig, Pills spürbar schmaler.
+  Determinismus geprüft: zwei Läufe, `cmp` auf alle sechs Dateien (3× SVG
+  + 3× PNG) ohne Ausgabe.
+
 ### S-metadata — Serienmetadaten als YAML
 
 **Ziel:** alle Prosafelder aus `elwetritsch_coin_series_metadata_v3.md` (pro

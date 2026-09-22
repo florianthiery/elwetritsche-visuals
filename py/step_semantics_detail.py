@@ -104,12 +104,20 @@ def _cards(parts: list[str], d: dict, y0: float) -> float:
     # Befund, 2026-09-22: user-reported font size/position mismatch).
     label_size, value_size, notes_size, chip_size = 16, 18, 14, 17
 
-    # Pre-wrap every card's text so all cards can share one height.
+    # Pre-wrap every card's text so all cards can share one height. Notes
+    # are re-flowed through wrap_lines rather than trusted as already-fitting
+    # lines: they used to be rendered exactly as split in the YAML, which
+    # assumed whoever wrote the line breaks had judged the pixel width
+    # correctly -- Coin III's "real castle above the findspot (Trifels)" and
+    # Coin II's "Südwestpfalz sandstone country" hadn't, and ran past their
+    # card's edge (PRIMER.md A1 Befund, 2026-09-22: user-reported "text
+    # overflow in boxes").
     label_w = card_w - 28
     wrapped = []
     for c in cards:
         value_lines = vu.wrap_lines(c["value"], label_w, value_size)
-        notes = c.get("notes", [])
+        notes_text = " ".join(c.get("notes", []))
+        notes = vu.wrap_lines(notes_text, label_w, notes_size) if notes_text else []
         chips = c.get("chips", [])
         wrapped.append((value_lines, notes, chips, c.get("caption", "")))
 
@@ -117,8 +125,16 @@ def _cards(parts: list[str], d: dict, y0: float) -> float:
     max_notes_lines = max(len(w[1]) for w in wrapped)
     max_chip_rows = max(len(w[2]) for w in wrapped) or 1
 
+    # link_y (first chip's own baseline) sits 34px below content_h rather
+    # than 14: with only 14px, the divider line -- drawn 8px above it --
+    # landed just 8px above that first chip's baseline, well inside a 17px
+    # font's cap-height, so the divider visually crossed through the chip
+    # text itself (PRIMER.md A1 Befund, 2026-09-22: user-reported "the
+    # links overlap with the line"). The extra 20px clears that, and
+    # link_area_h grows by the same 20px to keep the bottom padding below
+    # the last chip row unchanged.
     content_h = 22 + 20 + 6 + max_value_lines * 25 + 6 + max_notes_lines * 20
-    link_area_h = 16 + max_chip_rows * 25 + 10
+    link_area_h = 36 + max_chip_rows * 25 + 10
     card_h = content_h + link_area_h
 
     for i, c in enumerate(cards):
@@ -139,9 +155,10 @@ def _cards(parts: list[str], d: dict, y0: float) -> float:
             parts.append(vu.svg_text(x + 14, ty, line, size=notes_size, color=vu.TEXT_MUTED))
             ty += 20
 
-        link_y = y0 + content_h + 14
-        parts.append(f'<line x1="{x + 14:.1f}" y1="{link_y - 8:.1f}" x2="{x + card_w - 14:.1f}" '
-                      f'y2="{link_y - 8:.1f}" stroke="{vu.BORDER}" stroke-width="1"/>')
+        divider_y = y0 + content_h + 14
+        link_y = y0 + content_h + 34
+        parts.append(f'<line x1="{x + 14:.1f}" y1="{divider_y:.1f}" x2="{x + card_w - 14:.1f}" '
+                      f'y2="{divider_y:.1f}" stroke="{vu.BORDER}" stroke-width="1"/>')
         if chips:
             cy = link_y
             for chip_label in chips:
@@ -217,12 +234,12 @@ def _terminology_graph(parts: list[str], d: dict) -> float:
         parts.append(f'<circle cx="{spine_x:.1f}" cy="{branch_y:.1f}" r="3.5" '
                       f'fill="{vu.LINE_NEUTRAL}"/>')
         chip, chip_w = vu.svg_chip(content_x, pill_y, rel["property"], vu.PROPERTY, size=16,
-                                    h=pill_h, align="start", pad=14)
+                                    h=pill_h, align="start", pad=11)
         parts.append(chip)
 
         node_y = pill_y + pill_h + gap_pill_node
         parts.append(vu.svg_box(x, node_y, w, node_h, rel["target_label"], "",
-                                 colors=CATEGORY[rel["category"]], title_size=18))
+                                 colors=CATEGORY[rel["category"]], title_size=18, align="start"))
         subtitle = rel.get("target_subtitle", "")
         if subtitle:
             parts.append(vu.svg_text(content_x, node_y + node_h + 20, subtitle, size=16,
