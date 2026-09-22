@@ -247,7 +247,8 @@ def svg_chip(x: float, y: float, label: str, colors: dict, *, size: float = 11.5
 
 
 def svg_box(x: float, y: float, w: float, h: float, title: str, subtitle: str = "",
-            *, colors: dict, rx: float = 10, stroke_width: float = 1.4) -> str:
+            *, colors: dict, rx: float = 10, stroke_width: float = 1.4,
+            title_size: float = 16, subtitle_size: float = 16) -> str:
     """A category node: filled rounded box, bold title, optional grey
     subtitle line (used for a persistent identifier)."""
     fill, stroke, text_color = colors["fill"], colors["stroke"], colors.get("text", "#ffffff")
@@ -255,18 +256,18 @@ def svg_box(x: float, y: float, w: float, h: float, title: str, subtitle: str = 
              f'fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"/>']
     cx = x + w / 2
     if subtitle:
-        parts.append(svg_text(cx, y + h / 2 - 4, title, size=15.5, weight=500,
+        parts.append(svg_text(cx, y + h / 2 - 5, title, size=title_size, weight=500,
                                color=text_color, anchor="middle", baseline="central"))
-        parts.append(svg_text(cx, y + h / 2 + 15, subtitle, size=11.5, color=text_color,
+        parts.append(svg_text(cx, y + h / 2 + 17, subtitle, size=subtitle_size, color=text_color,
                                anchor="middle", baseline="central", opacity=0.82))
     else:
-        parts.append(svg_text(cx, y + h / 2, title, size=15.5, weight=500, color=text_color,
-                               anchor="middle", baseline="central"))
+        parts.append(svg_text(cx, y + h / 2, title, size=title_size, weight=500,
+                               color=text_color, anchor="middle", baseline="central"))
     return "\n".join(parts)
 
 
-def svg_legend(x: float, y: float, entries: list[tuple[str, dict]], *, box: float = 16,
-               gap: float = 10, row_h: float = 24, col_w: float = 240) -> str:
+def svg_legend(x: float, y: float, entries: list[tuple[str, dict]], *, box: float = 18,
+               gap: float = 10, row_h: float = 24, col_w: float = 240, size: float = 15) -> str:
     """A small colour-key legend: one swatch + label per entry, laid out in
     one row."""
     parts = []
@@ -275,7 +276,7 @@ def svg_legend(x: float, y: float, entries: list[tuple[str, dict]], *, box: floa
         ey = y
         parts.append(f'<rect x="{ex:.1f}" y="{ey:.1f}" width="{box}" height="{box}" rx="3" '
                       f'fill="{colors["fill"]}" stroke="{colors["stroke"]}" stroke-width="1.2"/>')
-        parts.append(svg_text(ex + box + gap, ey + box / 2, label, size=12.5,
+        parts.append(svg_text(ex + box + gap, ey + box / 2, label, size=size,
                                color=TEXT_DARK, baseline="central"))
     return "\n".join(parts)
 

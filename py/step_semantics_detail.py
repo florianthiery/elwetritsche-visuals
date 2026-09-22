@@ -51,7 +51,7 @@ CATEGORY = {"REAL": vu.REAL, "CLASS": vu.CLASS, "TERM": vu.TERM, "OWL": vu.OWL,
 # bigger coin images -- than this script first assumed (PRIMER.md A1
 # Befund, 2026-09-22: user-reported "coin too small / placement off").
 MARGIN = 40
-LEFT_W = 1530
+LEFT_W = 1480
 GAP = 40
 RIGHT_X = MARGIN + LEFT_W + GAP
 RIGHT_W = vu.CANVAS_W - MARGIN - RIGHT_X
@@ -83,12 +83,10 @@ def _coin_images(parts: list[str], d: dict) -> float:
     for i, key in enumerate(("obverse_image", "reverse_image")):
         x = x0 + i * (side + gap)
         parts.append(vu.svg_image_crop(x, y0, side, side, img_dir / d[key]))
-        parts.append(f'<rect x="{x:.1f}" y="{y0:.1f}" width="{side}" height="{side}" '
-                      f'fill="none" stroke="{vu.BORDER}" stroke-width="1"/>')
-    label_y = y0 + side + 22
-    parts.append(vu.svg_text(x0 + side / 2, label_y, "Obverse", size=13, color=vu.TEXT_MUTED,
+    label_y = y0 + side + 26
+    parts.append(vu.svg_text(x0 + side / 2, label_y, "Obverse", size=15, color=vu.TEXT_MUTED,
                               anchor="middle"))
-    parts.append(vu.svg_text(x0 + side + gap + side / 2, label_y, "Reverse", size=13,
+    parts.append(vu.svg_text(x0 + side + gap + side / 2, label_y, "Reverse", size=15,
                               color=vu.TEXT_MUTED, anchor="middle"))
     return label_y + 24
 
@@ -96,14 +94,21 @@ def _coin_images(parts: list[str], d: dict) -> float:
 def _cards(parts: list[str], d: dict, y0: float) -> None:
     cards = d["cards"]
     n = len(cards)
-    card_gap = 18
+    card_gap = 22
     card_w = (LEFT_W - (n - 1) * card_gap) / n
+
+    # Font sizes and line spacing pixel-measured against the reference
+    # figure (data/raw/reference/I_semantics_detail.png): the first
+    # rebuild used sizes closer to hdoku26-visuals' own house scale, which
+    # reads visibly smaller than the reference's own text (PRIMER.md A1
+    # Befund, 2026-09-22: user-reported font size/position mismatch).
+    label_size, value_size, notes_size, chip_size = 16, 18, 14, 17
 
     # Pre-wrap every card's text so all cards can share one height.
     label_w = card_w - 28
     wrapped = []
     for c in cards:
-        value_lines = vu.wrap_lines(c["value"], label_w, 17)
+        value_lines = vu.wrap_lines(c["value"], label_w, value_size)
         notes = c.get("notes", [])
         chips = c.get("chips", [])
         wrapped.append((value_lines, notes, chips, c.get("caption", "")))
@@ -112,8 +117,8 @@ def _cards(parts: list[str], d: dict, y0: float) -> None:
     max_notes_lines = max(len(w[1]) for w in wrapped)
     max_chip_rows = max(len(w[2]) for w in wrapped) or 1
 
-    content_h = 18 + 16 + 6 + max_value_lines * 23 + 6 + max_notes_lines * 18
-    link_area_h = 14 + max_chip_rows * 19 + 8
+    content_h = 22 + 20 + 6 + max_value_lines * 25 + 6 + max_notes_lines * 20
+    link_area_h = 16 + max_chip_rows * 25 + 10
     card_h = content_h + link_area_h
 
     for i, c in enumerate(cards):
@@ -121,30 +126,32 @@ def _cards(parts: list[str], d: dict, y0: float) -> None:
         x = MARGIN + i * (card_w + card_gap)
         parts.append(f'<rect x="{x:.1f}" y="{y0:.1f}" width="{card_w:.1f}" height="{card_h:.1f}" '
                       f'rx="10" fill="{vu.CARD_BG}" stroke="{vu.BORDER}" stroke-width="1.4"/>')
-        ty = y0 + 22
-        parts.append(vu.svg_text(x + 14, ty, c["label"].upper(), size=12, weight=500,
+        ty = y0 + 26
+        parts.append(vu.svg_text(x + 14, ty, c["label"].upper(), size=label_size, weight=500,
                                   color=vu.TEXT_MUTED))
-        ty += 22
+        ty += 26
         for line in value_lines:
-            parts.append(vu.svg_text(x + 14, ty, line, size=17, weight=500, color=vu.TEXT_DARK))
-            ty += 23
+            parts.append(vu.svg_text(x + 14, ty, line, size=value_size, weight=500,
+                                      color=vu.TEXT_DARK))
+            ty += 25
         ty += 4
         for line in notes:
-            parts.append(vu.svg_text(x + 14, ty, line, size=12.5, color=vu.TEXT_MUTED))
-            ty += 18
+            parts.append(vu.svg_text(x + 14, ty, line, size=notes_size, color=vu.TEXT_MUTED))
+            ty += 20
 
-        link_y = y0 + content_h + 12
-        parts.append(f'<line x1="{x + 14:.1f}" y1="{link_y - 6:.1f}" x2="{x + card_w - 14:.1f}" '
-                      f'y2="{link_y - 6:.1f}" stroke="{vu.BORDER}" stroke-width="1"/>')
+        link_y = y0 + content_h + 14
+        parts.append(f'<line x1="{x + 14:.1f}" y1="{link_y - 8:.1f}" x2="{x + card_w - 14:.1f}" '
+                      f'y2="{link_y - 8:.1f}" stroke="{vu.BORDER}" stroke-width="1"/>')
         if chips:
             cy = link_y
             for chip_label in chips:
-                parts.append(vu.svg_text(x + 14, cy, chip_label, size=12.5, weight=500,
+                parts.append(vu.svg_text(x + 14, cy, chip_label, size=chip_size, weight=500,
                                           color=vu.TERM["fill"]))
-                cy += 19
+                cy += 25
         elif caption:
-            block, _ = vu.svg_text_block(x + 14, link_y + 10, caption, card_w - 28, size=12,
-                                          line_h=17, color=vu.TEXT_MUTED, italic=True)
+            block, _ = vu.svg_text_block(x + 14, link_y + 10, caption, card_w - 28,
+                                          size=notes_size, line_h=19, color=vu.TEXT_MUTED,
+                                          italic=True)
             parts.append(block)
 
 
@@ -155,14 +162,14 @@ def _terminology_graph(parts: list[str], d: dict) -> None:
     x, w = RIGHT_X, RIGHT_W
     y = MARGIN
 
-    parts.append(vu.svg_text(x, y + 6, "Terminology graph (Linked Open Data)", size=20,
+    parts.append(vu.svg_text(x, y + 6, "Terminology graph (Linked Open Data)", size=22,
                               weight=500, color=vu.TEXT_DARK))
-    y += 40
+    y += 42
 
     root = d["terminology_graph"]["root"]
     root_h = 80
     parts.append(vu.svg_box(x, y, w, root_h, root["label"], root.get("subtitle", ""),
-                             colors=CATEGORY[root["category"]]))
+                             colors=CATEGORY[root["category"]], title_size=18, subtitle_size=16))
     spine_x = x + 26
     spine_top = y + root_h
 
@@ -178,7 +185,7 @@ def _terminology_graph(parts: list[str], d: dict) -> None:
     pill_h = 30
     node_h = 46
     gap_pill_node = 8
-    id_h = 22
+    id_h = 24
     gap_after_node = 18
     for rel in relations:
         pill_y = cursor + 16
@@ -199,16 +206,16 @@ def _terminology_graph(parts: list[str], d: dict) -> None:
                       f'stroke="{vu.LINE_NEUTRAL}" stroke-width="1.6" marker-end="url(#arrow)"/>')
         parts.append(f'<circle cx="{spine_x:.1f}" cy="{branch_y:.1f}" r="3.5" '
                       f'fill="{vu.LINE_NEUTRAL}"/>')
-        chip, chip_w = vu.svg_chip(pill_x, pill_y, rel["property"], vu.PROPERTY, size=13,
+        chip, chip_w = vu.svg_chip(pill_x, pill_y, rel["property"], vu.PROPERTY, size=14,
                                     h=pill_h, align="start", pad=14)
         parts.append(chip)
 
         node_y = pill_y + pill_h + gap_pill_node
         parts.append(vu.svg_box(x, node_y, w, node_h, rel["target_label"], "",
-                                 colors=CATEGORY[rel["category"]]))
+                                 colors=CATEGORY[rel["category"]], title_size=16))
         subtitle = rel.get("target_subtitle", "")
         if subtitle:
-            parts.append(vu.svg_text(x, node_y + node_h + 17, subtitle, size=12.5,
+            parts.append(vu.svg_text(x, node_y + node_h + 19, subtitle, size=14,
                                       color=vu.TEXT_MUTED))
         cursor = node_y + node_h + (id_h if subtitle else 0) + gap_after_node
 

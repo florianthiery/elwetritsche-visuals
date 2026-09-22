@@ -1,0 +1,101 @@
+# Semantics-detail page content for Coin II -- "The Wanderer" (ELW-02).
+#
+# Card and terminology-graph content drawn from
+# elwetritsch_coin_series_metadata_v3.md (Coin II) / data/raw/manual/
+# series_metadata.yaml, following the pattern established for Coin I
+# (data/raw/manual/coin_I.yaml) -- same six-relation terminology-graph
+# shape (material -> class hierarchy -> reverse motif -> site -> creature),
+# with the reverse motif's real-world depicts target chosen per coin
+# rather than copied: here "Palatinate Forest" (Pfälzerwald), the real
+# upland the coin's reverse motif depicts, and the real forest region
+# around the fictional findspot (PRIMER.md A1 Befund, 2026-09-22).
+#
+# Real-world identifiers (Wikidata QIDs) for this coin, beyond the ones
+# already used for Coin I, resolved by web search against wikidata.org:
+# Palatinate Forest wd:Q707004, sandstone wd:Q13085.
+
+coin_id: "II"
+elw_id: "ELW-02"
+title: "The Wanderer"
+site_key: "dahn"                            # key into manual/sites.yaml
+findspot_fictional: "Rock-shelter deposit 2, sandstone ledge below the Hochstein"
+obverse_image: "II_obverse.png"              # relative to data/raw/coins/images/
+reverse_image: "II_reverse.png"
+
+cards:
+  - label: "Material"
+    value: "Electrum (Au–Ag alloy)"
+    notes:
+      - "fictional, styled on archaic"
+      - "electrum coinage"
+    chips: ["wd:Q239481"]
+
+  - label: "Motif (obverse)"
+    value: "Elwetritsch with staff and backpack"
+    notes:
+      - "Palatine folk creature, shown here"
+      - "as a travelling hiker"
+    chips: ["wd:Q142294"]
+
+  - label: "Motif (reverse)"
+    value: "Palatinate Forest with sandstone ledge"
+    notes:
+      - "fictional reverse motif,"
+      - "real regional landscape (Pfälzerwald)"
+    chips: ["wd:Q707004", "wd:Q13085"]
+
+  - label: "Find spot (fictional)"
+    value: "near Dahn, Palatinate"
+    notes:
+      - "invented find context,"
+      - "Südwestpfalz sandstone country"
+    chips: ["wd:Q570408", "geonames:2939370"]
+
+  - label: "Metallurgical analysis"
+    value: "Au ≈47% · Ag ≈51% · Cu ≈2%"
+    notes:
+      - "freely invented — not a real"
+      - "measurement"
+    chips: []
+    caption: "cf. real published range: ≈42–48% Au"
+
+# The terminology graph: a vertical spine from the coin (as an E22
+# Human-Made Object instance) to the CIDOC-CRM classes, vocabulary terms
+# and real-world entities it is linked to. ``category`` selects the node
+# colour from elwetritsche_visuals_utils (REAL / CLASS / TERM).
+terminology_graph:
+  root:
+    label: "Elwetritsch stater"
+    subtitle: "(fictional coin)"
+    category: "REAL"
+  relations:
+    - property: "P45 consists of"
+      property_uri: "http://www.cidoc-crm.org/cidoc-crm/P45_consists_of"
+      target_label: "Electrum"
+      target_subtitle: "wd:Q239481"
+      category: "TERM"
+    - property: "P2 has type"
+      property_uri: "http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
+      target_label: "E22 Human-Made Object"
+      target_subtitle: "cidoc-crm.org/cidoc-crm/E22_Human-Made_Object"
+      category: "CLASS"
+    - property: "P2 has type"
+      property_uri: "http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
+      target_label: "Coin"
+      target_subtitle: "wd:Q41207 · aat:300037222"
+      category: "TERM"
+    - property: "P62 depicts"
+      property_uri: "http://www.cidoc-crm.org/cidoc-crm/P62_depicts"
+      target_label: "Palatinate Forest (Pfälzerwald)"
+      target_subtitle: "wd:Q707004"
+      category: "TERM"
+    - property: "P53 has former or current location"
+      property_uri: "http://www.cidoc-crm.org/cidoc-crm/P53_has_former_or_current_location"
+      target_label: "near Dahn (Palatinate)"
+      target_subtitle: "wd:Q570408"
+      category: "TERM"
+    - property: "P62 depicts"
+      property_uri: "http://www.cidoc-crm.org/cidoc-crm/P62_depicts"
+      target_label: "Elwetritsch (creature)"
+      target_subtitle: "wd:Q142294"
+      category: "TERM"

@@ -150,7 +150,7 @@ zitierfähige Produkt.
 | S1 | Skelett: main.py, Utils, Rohdaten, Lizenz | S0 | erledigt 2026-09-22 |
 | S-I | Semantics-Detail-Seite Münze I (Pilot) | S1 | erledigt 2026-09-22 |
 | S-metadata | Serienmetadaten aller 11 Münzen als `data/raw/manual/series_metadata.yaml` | S1 | erledigt 2026-09-22 |
-| S-II…S-XI | Semantics-Detail-Seiten Münzen II–XI | S-I, S-metadata | offen |
+| S-II…S-XI | Semantics-Detail-Seiten Münzen II–XI | S-I, S-metadata | teilweise erledigt 2026-09-22 (II, III) |
 | S-overview | Übersichtsgrafik über alle 11 Münzen (Fundort vs. moderne Site, stilisierte Karte) | S1, S-metadata | offen |
 
 S-metadata, S-II…S-XI und S-overview hängen nur vom Skelett (S1) ab, nicht
@@ -239,6 +239,30 @@ angepasst (siehe A1). Erneut visuell gegen die Referenz abgeglichen
 deckungsgleich). Determinismus erneut geprüft: zwei Läufe, `cmp`
 byte-identisch.
 
+#### Nachgebessert 2026-09-22, dritter Durchgang (Rahmen, Schriftgrößen)
+
+Nutzerhinweis: Rahmen um die Münzbilder soll weg, und Schriftposition/
+-größe passen noch nicht ganz. Umgesetzt:
+
+- Die dünne graue Rahmenlinie um Avers-/Revers-Bild (`<rect ... stroke=
+  BORDER/>` in `_coin_images`) entfernt — reine Stilentscheidung auf
+  Nutzerwunsch, unabhängig davon, ob die Referenz selbst einen (kaum
+  sichtbaren) Rahmen hat.
+- Alle Textgrößen in den Attributkarten und im Terminologiegraphen per
+  Zeilen-Höhen-Messung (Bandprofil: helle/dunkle Pixelreihen pro Textzeile
+  zählen) gegen die Referenz kalibriert, statt der zuerst aus
+  hdoku26-visuals übernommenen Werte: Kartenlabel 12→16, Kartenwert
+  17→18, Notizen 12.5→14, Kennungs-Chip 12.5→17, Wurzelbox-Titel 15.5→18,
+  Wurzelbox-Untertitel 11.5→16, Knotentitel 15.5→16, Property-Pill 13→14,
+  externe Knotenkennung 12.5→14, Legende 12.5→15, Überschrift 20→22,
+  Avers/Revers-Beschriftung 13→15. `svg_box()` bekam dafür neue
+  Parameter `title_size`/`subtitle_size` (Default weiterhin 16), da
+  Wurzelbox und Relationsknoten unterschiedliche Zielgrößen brauchen.
+  Kartenreihe: `card_gap` 18→22 (ebenfalls pixel-gemessen, `LEFT_W`
+  zugleich 1530→1480 zur Deckung mit der gemessenen Kartenreihenbreite
+  `x=60..1540`).
+- Determinismus erneut geprüft: zwei Läufe, `cmp` byte-identisch.
+
 ### S-metadata — Serienmetadaten als YAML
 
 **Ziel:** alle Prosafelder aus `elwetritsch_coin_series_metadata_v3.md` (pro
@@ -283,6 +307,36 @@ Herrschaftsattribute, Münze X einen Routen-/Pilgerbezug ohne
 Dubbeglas-Motiv).
 
 **Abnahme:** wie S-I.
+
+#### Erledigt 2026-09-22 (Münzen II und III, als Paket-Test)
+
+Nutzerwunsch: vor dem weiteren Rollout erst prüfen, ob Coin I's Layout auch
+für andere Münzen "im Paket" funktioniert. `coin_II.yaml` (Dahn/
+Pfälzerwald, "The Wanderer") und `coin_III.yaml` (Annweiler am Trifels,
+"The Guardian") angelegt, nach demselben Sechs-Relationen-Schema wie
+Münze I (Material → Klassenhierarchie → Revers-Motiv (real) → Site →
+Kreatur), aber mit münzspezifischem, real existierendem Depicts-Ziel statt
+eines Kopiervorgangs:
+
+- Münze II: Revers zeigt Pfälzerwald-Landschaft mit Sandstein-Formation →
+  `P62 depicts` → **Palatinate Forest** (wd:Q707004) statt eines
+  generischen Ziels; Karte zusätzlich mit **sandstone** (wd:Q13085) als
+  zweitem Chip.
+- Münze III: Revers zeigt eine Burg auf einem Hügel → `P62 depicts` →
+  **Trifels Castle** (wd:Q559202) — die tatsächliche Burg oberhalb von
+  Annweiler am Trifels, dem Site der Münze; damit bekommt das fiktive
+  Revers-Motiv ein reales, thematisch passendes Ziel statt eines
+  Platzhalters.
+
+Beide QIDs per Websuche gegen wikidata.org aufgelöst (gleiche Methode wie
+bei `sites.yaml`, kein direkter API-Zugriff im Sandbox). `grapevine`
+(wd:Q1422342) aus Münze I wiederverwendet (dort bereits als Karten-Chip
+geführt, nicht neu verifiziert).
+
+`python main.py` baut jetzt alle drei Münzen automatisch (`glob` über
+`coin_*.yaml`, kein Codeeingriff nötig, wie schon in S-I vorgesehen).
+Determinismus geprüft: zwei Läufe, `cmp` auf alle sechs Dateien (3× SVG +
+3× PNG) ohne Ausgabe.
 
 ### S-overview — Übersichtsgrafik über alle 11 Münzen
 

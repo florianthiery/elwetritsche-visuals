@@ -20,8 +20,10 @@ Unlike that repository this one is single-language (English) — see
 | Coin | Figure | Files |
 |---|---|---|
 | I — The Reveller (ELW-01) | Semantics detail: obverse/reverse images, five attribute cards (material, motifs, fictional find spot, metallurgical analysis) and a CIDOC-CRM terminology graph (the coin as an E22 Human-Made Object instance, linked to real Wikidata/GeoNames/Getty AAT identifiers) | `img/semantics-detail/I_semantics_detail.{svg,png}` |
+| II — The Wanderer (ELW-02) | Same page; reverse motif's real depicts target is the Palatinate Forest (Pfälzerwald) | `img/semantics-detail/II_semantics_detail.{svg,png}` |
+| III — The Guardian (ELW-03) | Same page; reverse motif's real depicts target is Trifels Castle, the real castle at the coin's site (Annweiler am Trifels) | `img/semantics-detail/III_semantics_detail.{svg,png}` |
 
-Coins II–XI follow the same page once their `data/raw/manual/coin_<ID>.yaml`
+Coins IV–XI follow the same page once their `data/raw/manual/coin_<ID>.yaml`
 is drafted — no code change needed, `step_semantics_detail.py` builds
 whichever coin files exist (see PRIMER.md Teil B/D). An overview figure
 across all eleven coins (findspot vs. modern site, with a stylised
