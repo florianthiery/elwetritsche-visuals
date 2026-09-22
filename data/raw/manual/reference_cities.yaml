@@ -1,0 +1,40 @@
+# A handful of larger towns near the eleven coin sites, shown on the
+# S-overview map purely for orientation ("ggf noch paar größere Städte",
+# user feedback 2026-09-23) -- unlike sites.yaml these are NOT part of
+# any coin's data (no card, no graph node, no Wikidata/GeoNames
+# identifier resolved here) and nothing else in this repository reads
+# this file. Coordinates are approximate town-centre positions from
+# general geographic knowledge, not independently verified against
+# Wikidata/GeoNames the way sites.yaml's were -- adequate for a small
+# label on a schematic overview map, not for anything that needs a
+# citable identifier.
+
+mannheim:
+  label: "Mannheim"
+  lat: 49.4875
+  lon: 8.4660
+
+ludwigshafen:
+  label: "Ludwigshafen am Rhein"
+  lat: 49.4741
+  lon: 8.4460
+
+worms:
+  label: "Worms"
+  lat: 49.6326
+  lon: 8.3594
+
+landau:
+  label: "Landau in der Pfalz"
+  lat: 49.1976
+  lon: 8.1173
+
+kaiserslautern:
+  label: "Kaiserslautern"
+  lat: 49.4401
+  lon: 7.7491
+
+frankenthal:
+  label: "Frankenthal (Pfalz)"
+  lat: 49.5334
+  lon: 8.3500

@@ -101,6 +101,55 @@ Zu Beginn jedes Chats hochladen, am Ende zurückschreiben.
   der Kartenbox zuerst, die Kreisgrenzen darüber nur als Konturlinie
   (`fill="none"`) — Lücken damit unabhängig von der Simplifizierungsqualität
   behoben, ohne die Geometrie selbst zu verändern.
+- **Zweite Nachbesserung der Übersichtsgrafik (geprüft 2026-09-23):**
+  Nutzerfeedback nach Commit des ersten Durchlaufs: die Karte soll in der
+  Höhe mit dem Münzraster abschließen statt kürzer zu sein; die
+  Kreisgrenzen allein wirken "komisch"; stattdessen etwas rauszoomen und
+  Rhein, ein paar größere Städte und Bundesländer ergänzen, "ein bisschen
+  wie zuvor" (angehängte Referenz: ein saniertes Kartenbild mit
+  Sandton-Fläche, blauem Rhein, Bundesland-Hervorhebung samt
+  Deutschland-Inset, Maßstabsbalken und Nordpfeil).
+  - Rhein-Geometrie ebenfalls einmalig von `raw.githubusercontent.com`
+    geladen (`nvkelso/natural-earth-vector`,
+    `geojson/ne_10m_rivers_lake_centerlines.geojson`, Feature `name ==
+    "Rhine"`, aus 1455 Flusssegmenten herausgefiltert), auf die Region
+    zugeschnitten (107 von ursprünglich 279 Punkten) und unter
+    `data/raw/geo/rhine.geojson` abgelegt — Natural-Earth-Datensätze sind
+    laut deren README public domain.
+  - Bundesländer-Geojson (bereits während der ersten Recherche zu diesem
+    Schritt testweise geladen) unter `data/raw/geo/germany_states.geojson`
+    abgelegt (gleiche Quelle/Lizenz wie die Kreis-Datei).
+  - Sechs größere Nachbarstädte (Mannheim, Ludwigshafen, Worms, Landau,
+    Kaiserslautern, Frankenthal) von Hand mit ungefähren Koordinaten in
+    `data/raw/manual/reference_cities.yaml` angelegt — ausdrücklich nur
+    zur Orientierung, keine Wikidata-/GeoNames-Auflösung wie bei
+    `sites.yaml`, da diese Orte selbst nicht Teil der Serien-Daten sind.
+  - `py/step_overview.py` neu strukturiert: `_cover_bounds()` weitet die
+    Kartengrenzen (statt sie mittig in eine höhere Box zu zentrieren) so
+    aus, dass eine seitentreue Skalierung die verfügbare Höhe exakt füllt
+    — dafür wird jetzt zuerst das Münzraster gebaut (liefert die
+    Zielhöhe), erst danach die Karte. `PAD_LON`/`PAD_LAT` von 0,05 auf
+    0,16/0,10 angehoben (zusätzliches Rauszoomen). Die Kreisgrenzen sind
+    jetzt eine reine, dezente Konturlinie ohne eigene Füllung
+    (`opacity=0.55`) statt der bisherigen Hauptfläche — die
+    Bundesland-Fläche (Sandton für Rheinland-Pfalz, helles Grau für
+    Nachbarn) übernimmt die Flächenfarbe; damit erledigt sich auch die
+    Lücken-Korrektur aus dem ersten Durchlauf von selbst (keine
+    Einzelflächen mehr, die Lücken zeigen könnten).
+  - Neue Kartenelemente: Deutschland-Inset (oben links, Rheinland-Pfalz
+    hervorgehoben), Nordpfeil, Maßstabsbalken (rundet auf eine "glatte"
+    km-Zahl, die 90–220px breit wird) — alle drei aus
+    `germany_states.geojson` bzw. rein rechnerisch, keine weitere
+    Abhängigkeit.
+  - Pin-/Stadtlabel-Kollisionen nicht mehr nur visuell geprüft, sondern
+    zusätzlich mit einem kleinen Kollisions-Check-Skript (Bounding-Boxen
+    aus `vu.text_width()`, paarweise auf Überlappung getestet) —
+    fand eine Überlappung (Neustadt-Beschriftung lief durch den
+    Elmstein-Pin), die reine Sichtprüfung im ersten Durchlauf nicht
+    aufgefallen war; behoben durch Wechsel der Beschriftungsrichtung für
+    Neustadt.
+  - Determinismus erneut geprüft: zwei Läufe, `cmp` auf SVG und PNG ohne
+    Ausgabe. `python main.py` baut beide Schritte durch.
 
 ### A2 Zielbild
 
@@ -158,6 +207,9 @@ Eigenschaften:
 | Schriftbreiten-Messung | echte Glyphenbreite aus der vendorten Fira-Sans-.ttf via Pillow statt einer geschätzten Zeichen-Durchschnittsbreite — eine flache Schätzung passt nie gleichzeitig zu kurzen Property-Namen und langen Sätzen (`Pillow` als neue Abhängigkeit in `requirements.txt`) | 2026-09-23 |
 | Übersichtsgrafik-Layout | Karte links (moderne Kreisgrenzen, Rheinland-Pfalz/Pfalz), Münzbilder rechts als Kartenraster — **keine** Tabelle; dieselbe kleine Nummer (I–XI) auf Kartenpin und Münzbild verknüpft beide Seiten, expliziter Nutzerwunsch (löst den bisherigen Teil-D-Punkt "Layout noch offen" auf) | 2026-09-23 |
 | Kartenprojektion | einfache äquirechteckige Projektion mit Breitengrad-Kosinuskorrektur, keine weitere Geo-Abhängigkeit (kein cartopy/geopandas/pyproj) — passend zur Repo-Regel "pure Python, minimale Abhängigkeiten"; auf Pfalz-Maßstab (< 1° Breite) ausreichend genau | 2026-09-23 |
+| Kartografische Farbpalette (Land/Wasser) | eigene, kleine Palette getrennt von der Mermaid-Knotenfarbpalette (Sandton für Rheinland-Pfalz, helles Grau für Nachbar-Bundesländer, Blau für den Rhein) — eine Landmasse/ein Fluss ist kein Semantik-Knoten, den die Hausfarbpalette abdecken müsste | 2026-09-23 |
+| Kartenhöhe vs. Münzraster | die Karte übernimmt die Höhe des rechten Münzrasters (nicht umgekehrt) und wird per `_cover_bounds()` seitentreu bis zum Boxrand ausgezoomt statt mittig mit Rand zu enden — explizite Nutzerkorrektur zum ersten Durchlauf | 2026-09-23 |
+| Kartenumfang | Kreisgrenzen nur noch als dezente Konturlinie (keine eigene Füllung mehr), stattdessen Bundesland-Fläche (Rheinland-Pfalz hervorgehoben), Rhein, ein paar größere Nachbarstädte, Deutschland-Inset, Nordpfeil, Maßstabsbalken — "die Gebietseinheiten allein sind komisch, eher wie zuvor", löst den ersten Durchlauf ab | 2026-09-23 |
 
 ### A5 Was in welchem Chat hochgeladen wird
 
@@ -180,7 +232,7 @@ zitierfähige Produkt.
 | S-I | Semantics-Detail-Seite Münze I (Pilot) | S1 | erledigt 2026-09-22 |
 | S-metadata | Serienmetadaten aller 11 Münzen als `data/raw/manual/series_metadata.yaml` | S1 | erledigt 2026-09-22 |
 | S-II…S-XI | Semantics-Detail-Seiten Münzen II–XI | S-I, S-metadata | teilweise erledigt 2026-09-22 (II, III) |
-| S-overview | Übersichtsgrafik über alle 11 Münzen (Fundort vs. moderne Site, stilisierte Karte) | S1, S-metadata | erledigt 2026-09-23 (erster Durchlauf, Feedback ausstehend) |
+| S-overview | Übersichtsgrafik über alle 11 Münzen (Fundort vs. moderne Site, stilisierte Karte) | S1, S-metadata | erledigt 2026-09-23 (zweiter Durchlauf, Feedback ausstehend) |
 
 S-metadata, S-II…S-XI und S-overview hängen nur vom Skelett (S1) ab, nicht
 voneinander, und können in beliebiger Reihenfolge angegangen werden; laut A4
@@ -585,6 +637,40 @@ auf: Karte links, Münzbilder (keine Tabelle) rechts, mit Nummerierung.
   nicht Avers+Revers (Platzgründe im Raster — die Revers-Motive stehen
   bereits in den Semantics-Detail-Seiten). Beides ausdrücklich als "erster
   Versuch" präsentiert (Nutzerformulierung), offen für Rückmeldung.
+
+#### Erledigt 2026-09-23, zweiter Durchlauf (Kartenhöhe, Rauszoomen, Rhein/Städte/Bundesländer)
+
+Nutzerfeedback (nach Commit des ersten Durchlaufs): Kartenhöhe soll mit
+dem Münzraster abschließen; die Kreisgrenzen allein wirken "komisch",
+lieber etwas rauszoomen und Rhein, größere Städte und Bundesländer
+ergänzen, "ein bisschen wie zuvor" (siehe A1 Befunde für Details und
+Quellen/Lizenzen).
+
+- Zwei neue Rohdateien (`data/raw/geo/rhine.geojson`,
+  `data/raw/geo/germany_states.geojson`) und eine neue Handliste
+  (`data/raw/manual/reference_cities.yaml`) hinzugefügt — alle drei in
+  `data/raw/README.md` dokumentiert.
+- `py/step_overview.py`: Münzraster wird jetzt zuerst gebaut, die Karte
+  übernimmt dessen Höhe (`_cover_bounds()` weitet die Kartengrenzen
+  seitentreu statt mittig zu zentrieren — siehe A1/A4). Kreisgrenzen sind
+  jetzt eine dezente Konturlinie ohne eigene Füllung; die Bundesland-
+  Fläche (Rheinland-Pfalz hervorgehoben, Nachbarn hellgrau) übernimmt die
+  Flächenfarbe. Neu: Rhein (blaue Linie), sechs Referenzstädte (kleine
+  graue Punkte mit Beschriftung, ohne Nummer — keine Koinseiten), ein
+  Deutschland-Inset (oben links, Rheinland-Pfalz hervorgehoben),
+  Nordpfeil, Maßstabsbalken.
+- Eine Pin-/Stadtlabel-Überlappung (Neustadt-Beschriftung lief durch den
+  Elmstein-Pin) per Kollisions-Check-Skript gefunden — nicht durch reine
+  Sichtprüfung, die im ersten Durchlauf noch ausgereicht hatte, aber bei
+  der neuen, dichteren Beschriftung (plus sechs Städtenamen) nicht mehr
+  zuverlässig war. Behoben durch Wechsel der Label-Richtung für Neustadt;
+  Kollisions-Check auf alle Pins/Stadtlabel angewendet, keine weiteren
+  Überlappungen gefunden.
+- Visuell geprüft: Karte endet jetzt bündig mit dem Münzraster; Inset,
+  Nordpfeil und Maßstabsbalken kollidieren mit keinem Pin/Label; Rhein
+  verläuft sichtbar durch die Karte; alle sechs Städte lesbar platziert.
+  Determinismus geprüft: zwei Läufe, `cmp` auf SVG und PNG ohne Ausgabe.
+  `python main.py` baut beide Schritte durch.
 
 ---
 
