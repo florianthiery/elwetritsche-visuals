@@ -1,0 +1,252 @@
+# Structured, machine-readable transcription of every field in
+# ../coins/elwetritsch_coin_series_metadata_v3.md (the prose source for
+# all eleven fictional Elwetritsch staters), so that later visualisation
+# steps can read one coin's data with a plain YAML load instead of
+# re-parsing the markdown. Transcribed by hand against that file, values
+# unchanged (PRIMER.md A1 Befund, 2026-09-22).
+#
+# Not a replacement for data/raw/manual/coin_<ID>.yaml: those files hold
+# the *curated* card/terminology-graph copy for the semantics-detail page
+# (step_semantics_detail.py) and may phrase things more compactly for that
+# layout. This file holds the *complete* per-coin prose fields as the
+# source markdown states them, for figures that need more of that prose
+# (the planned overview map, for instance) without going back to the .md.
+#
+# `site_key` is the key into sites.yaml for the coin's real modern
+# municipality; the eleven keys here are in the same I-XI order as
+# sites.yaml itself. `composition_pct` parses the "Au ~X%, Ag ~Y%, Cu ~Z%"
+# figures given in the source (all marked there as approximate/fictional,
+# hence "~", not "="). `prompt_obverse` / `prompt_reverse` split the
+# source's single "Prompt:" field on its "|" separator.
+
+shared:
+  object_type: "Coin"
+  cidoc_crm_class: "E22 Human-Made Object"
+  material: "Electrum (Au–Ag alloy)"
+  series: "Elwetritsch staters (fictional coin series)"
+  setting: "Palatinate (Pfalz), present-day Rhineland-Palatinate, Germany"
+  period: "Archaic-style fictional issue, ca. 6th–5th century BCE"
+  concept: "Archaic coin aesthetics deliberately combined with anachronistic Palatinate folklore and regional motifs."
+  coordinates_note: "Omitted because all archaeological findspots are fictional."
+  base_visual_prompt: >-
+    Irregular ancient electrum flan, warm light-gold tone, subtly hammered
+    and weathered surface with fine cracks, simple raised relief, humorous
+    strongly stylised long-beaked Elwetritsch with large round eyes,
+    restrained archaic/folk-art detail, frontal numismatic presentation on
+    a clean white background, no lettering or coin number on the coin.
+    Obverse: uncluttered figure with a few clear attributes. Reverse:
+    compact motif inside a recessed square incuse. Keep the visual
+    language consistent with Coins I–X.
+  real_vs_fictional_note: >-
+    For presentation and graph visualisation, distinguish real
+    terminology/geographical entities (e.g. Electrum, Coin, Speyer, Dahn,
+    Limburgerhof) from fictional research objects and archaeological
+    contexts (ELW-01–11 and their findspots).
+
+coins:
+  I:
+    elw_id: "ELW-01"
+    title: "The Reveller"
+    composition_text: "Au ≈45%, Ag ≈53%, Cu ≈2%"
+    composition_pct: {au: 45, ag: 53, cu: 2}
+    obverse: "Horned-helmet Elwetritsch holding a club and Dubbeglas."
+    reverse: "Grapevine, grape cluster and Dubbeglas in square incuse."
+    site_key: "edenkoben"
+    modern_site: "Edenkoben — Südliche Weinstraße"
+    findspot_fictional: 'Hoard 3, vineyard terrace "Im Letten"'
+    find_context: "Small ceramic-container hoard allegedly recovered during vineyard terracing, with four further electrum fragments."
+    interpretative_label: "Wine / conviviality"
+    prompt_obverse: "Horned helmet; club; Dubbeglas."
+    prompt_reverse: "grapevine; grapes; Dubbeglas."
+    obverse_image: "I_obverse.png"
+    reverse_image: "I_reverse.png"
+
+  II:
+    elw_id: "ELW-02"
+    title: "The Wanderer"
+    composition_text: "Au ≈47%, Ag ≈51%, Cu ≈2%"
+    composition_pct: {au: 47, ag: 51, cu: 2}
+    obverse: "Travelling Elwetritsch with horned helmet, walking staff and backpack with rolled bedding."
+    reverse: "Palatinate Forest landscape with sandstone formation, tree, hills and sun in square incuse."
+    site_key: "dahn"
+    modern_site: "Dahn — Südwestpfalz"
+    findspot_fictional: "Rock-shelter deposit 2, sandstone ledge below the Hochstein"
+    find_context: "Single coin allegedly recovered from a shallow sediment pocket beneath a sandstone overhang with charcoal and pottery fragments."
+    interpretative_label: "Travel / forest / Buntsandstein landscape"
+    prompt_obverse: "Horned helmet; staff; backpack; bedroll."
+    prompt_reverse: "sandstone rocks; tree; hills; sun."
+    obverse_image: "II_obverse.png"
+    reverse_image: "II_reverse.png"
+
+  III:
+    elw_id: "ELW-03"
+    title: "The Guardian"
+    composition_text: "Au ≈43%, Ag ≈55%, Cu ≈2%"
+    composition_pct: {au: 43, ag: 55, cu: 2}
+    obverse: "Horned-helmet Elwetritsch with spear and round shield bearing a grapevine emblem."
+    reverse: "Fortified hilltop castle, rocky terrain and grapevine in square incuse."
+    site_key: "annweiler_am_trifels"
+    modern_site: "Annweiler am Trifels — Südliche Weinstraße"
+    findspot_fictional: 'Hoard 7, vineyard margin "Am Sonnenberg"'
+    find_context: "Dispersed electrum pieces allegedly found below the castle hill and interpreted as a disturbed small hoard."
+    interpretative_label: "Defence / castle landscape"
+    prompt_obverse: "Horned helmet; spear; round grapevine shield."
+    prompt_reverse: "hilltop castle; rocks; grapevine."
+    obverse_image: "III_obverse.png"
+    reverse_image: "III_reverse.png"
+
+  IV:
+    elw_id: "ELW-04"
+    title: "The Winegrower"
+    composition_text: "Au ≈46%, Ag ≈52%, Cu ≈2%"
+    composition_pct: {au: 46, ag: 52, cu: 2}
+    obverse: "Elwetritsch with pruning knife/sickle, grape cluster and harvest basket."
+    reverse: "Wooden screw wine press framed by grapevines and grape clusters in square incuse."
+    site_key: "deidesheim"
+    modern_site: "Deidesheim — Bad Dürkheim"
+    findspot_fictional: 'Vineyard feature 5, "Paradiesgarten", former press-house plot'
+    find_context: "Single coin allegedly recovered from a stone-lined feature associated with a later vineyard/press-house complex; the association is intentionally anachronistic."
+    interpretative_label: "Viticulture / grape harvest / wine production"
+    prompt_obverse: "Sickle; grape cluster; harvest basket."
+    prompt_reverse: "screw wine press; grapevines; grapes."
+    obverse_image: "IV_obverse.png"
+    reverse_image: "IV_reverse.png"
+
+  V:
+    elw_id: "ELW-05"
+    title: "The Imperial Elwetritsch"
+    composition_text: "Au ≈48%, Ag ≈50%, Cu ≈2%"
+    composition_pct: {au: 48, ag: 50, cu: 2}
+    obverse: "Crowned Elwetritsch in ceremonial cloak holding sceptre and orb."
+    reverse: "Stylised monumental cathedral above wavy Rhine lines in square incuse."
+    site_key: "speyer"
+    modern_site: "Speyer — Kreisfreie Stadt Speyer"
+    findspot_fictional: "Riverbank find 1, gravel terrace near the Rhine"
+    find_context: "Isolated coin allegedly recovered from redeposited river gravel; no closed archaeological context."
+    interpretative_label: "Authority / monumental architecture / Rhine"
+    prompt_obverse: "Crown; ceremonial cloak; sceptre; orb."
+    prompt_reverse: "monumental cathedral; Rhine waves."
+    obverse_image: "V_obverse.png"
+    reverse_image: "V_reverse.png"
+
+  VI:
+    elw_id: "ELW-06"
+    title: "The Forest Keeper"
+    composition_text: "Au ≈44%, Ag ≈54%, Cu ≈2%"
+    composition_pct: {au: 44, ag: 54, cu: 2}
+    obverse: "Ranger Elwetritsch with feathered hat and oak-leaf emblem, binoculars, backpack/bedroll and gnarled staff."
+    reverse: "Wild boar beneath an old oak with acorns, rocks and forest vegetation in square incuse."
+    site_key: "elmstein"
+    modern_site: "Elmstein — Bad Dürkheim"
+    findspot_fictional: "Forest deposit 4, oak stand near the Speyerbach valley"
+    find_context: "Single coin allegedly recovered from shallow colluvial sediment beside an old woodland track with fictional charcoal and ceramic fragments."
+    interpretative_label: "Forest / wildlife / woodland stewardship"
+    prompt_obverse: "Feathered ranger hat; binoculars; backpack; staff; oak leaves/acorns."
+    prompt_reverse: "wild boar; old oak; rocks; forest."
+    obverse_image: "VI_obverse.png"
+    reverse_image: "VI_reverse.png"
+
+  VII:
+    elw_id: "ELW-07"
+    title: "The Stonemason"
+    composition_text: "Au ≈42%, Ag ≈56%, Cu ≈2%"
+    composition_pct: {au: 42, ag: 56, cu: 2}
+    obverse: "Stonemason Elwetritsch with work cap, apron, hammer and chisel beside a sandstone block."
+    reverse: "Fortified gateway between massive layered sandstone cliffs, rocky path and small grapevine in square incuse."
+    site_key: "busenberg"
+    modern_site: "Busenberg — Südwestpfalz"
+    findspot_fictional: "Quarry scatter 2, abandoned sandstone working near Drachenfels"
+    find_context: "Coin allegedly recovered from a spoil layer beside a historic sandstone extraction area; association is fictional."
+    interpretative_label: "Craft / stoneworking / castles / Buntsandstein"
+    prompt_obverse: "Work cap; apron; hammer; chisel; sandstone block."
+    prompt_reverse: "fortified gate; layered sandstone cliffs; path; grapevine."
+    obverse_image: "VII_obverse.png"
+    reverse_image: "VII_reverse.png"
+
+  VIII:
+    elw_id: "ELW-08"
+    title: "The Cook"
+    composition_text: "Au ≈46%, Ag ≈51%, Cu ≈3%"
+    composition_pct: {au: 46, ag: 51, cu: 3}
+    obverse: "Cook Elwetritsch with chef's cap, neckerchief and apron, holding a spoon and steaming pot; wine/grape motifs accompany the figure."
+    reverse: "Sliced Saumagen-like dish with potatoes, herbs, grapes, vine leaves and wine jug in square incuse."
+    site_key: "kallstadt"
+    modern_site: "Kallstadt — Bad Dürkheim"
+    findspot_fictional: 'Cellar deposit 6, vineyard farmstead "Am Saumagen"'
+    find_context: "Coin allegedly found in a stone-lined cellar fill; food remains and pottery are invented components of the context."
+    interpretative_label: "Palatinate cuisine / food / wine culture"
+    prompt_obverse: "Chef's cap; apron; spoon; steaming pot; grapes."
+    prompt_reverse: "sliced Saumagen; potatoes; herbs; grapes; wine jug."
+    obverse_image: "VIII_obverse.png"
+    reverse_image: "VIII_reverse.png"
+
+  IX:
+    elw_id: "ELW-09"
+    title: "The Rhine Ferryman"
+    composition_text: "Au ≈45%, Ag ≈52%, Cu ≈3%"
+    composition_pct: {au: 45, ag: 52, cu: 3}
+    obverse: "Ferryman Elwetritsch with broad feathered hat and cloak, holding an oar and Dubbeglas; river details surround the figure."
+    reverse: "Ancient river vessel with sail and oars, waves, vineyards, settlement and hilltop fortification in square incuse."
+    site_key: "germersheim"
+    modern_site: "Germersheim — Germersheim"
+    findspot_fictional: "Riverbank scatter 3, former Rhine channel gravel bar"
+    find_context: "Coin allegedly recovered from redeposited palaeochannel gravel with small metallic objects; no closed context."
+    interpretative_label: "Rhine / transport / trade / travel"
+    prompt_obverse: "Feathered hat; cloak; oar; Dubbeglas; waves."
+    prompt_reverse: "river vessel; sail/oars; Rhine waves; vineyard; fortified settlement."
+    obverse_image: "IX_obverse.png"
+    reverse_image: "IX_reverse.png"
+
+  X:
+    elw_id: "ELW-10"
+    title: "The Pilgrim"
+    composition_text: "Au ≈47%, Ag ≈51%, Cu ≈2%"
+    composition_pct: {au: 47, ag: 51, cu: 2}
+    obverse: "Travelling Elwetritsch with broad feathered hat, staff, backpack, bedroll and canteen, consulting a route map beside a pictorial signpost."
+    reverse: "Route through fields towards a distant town, with bridge/river, walking boots, route marker and scallop-shell symbols in square incuse."
+    site_key: "neustadt_an_der_weinstrasse"
+    modern_site: "Neustadt an der Weinstraße — Kreisfreie Stadt Neustadt an der Weinstraße"
+    findspot_fictional: "Wayside deposit 1, vineyard path near Hambach"
+    find_context: "Single coin allegedly recovered beside an old vineyard route; association with travel equipment is fictional."
+    interpretative_label: "Route / pilgrimage / mobility / cultural landscape"
+    prompt_obverse: "Feathered traveller hat; staff; backpack; bedroll; map; pictorial signpost."
+    prompt_reverse: "route; town; bridge/river; boots; scallop shells."
+    obverse_image: "X_obverse.png"
+    reverse_image: "X_reverse.png"
+
+  XI:
+    elw_id: "ELW-11"
+    title: "The Athlete"
+    composition_text: "Au ≈46%, Ag ≈52%, Cu ≈2%"
+    composition_pct: {au: 46, ag: 52, cu: 2}
+    obverse: "Horned-helmet Elwetritsch athlete holding a clearly recognisable badminton racket and shuttlecock."
+    reverse: "Local tower motif with grapevine, grape cluster, Dubbeglas, sun and stylised water/landscape in square incuse."
+    site_key: "limburgerhof"
+    modern_site: "Limburgerhof — Rhein-Pfalz-Kreis"
+    findspot_fictional: "Terrace deposit 1, field margin near Limburgerhof"
+    find_context: "Single electrum coin allegedly recovered from an old alluvial terrace soil during agricultural work; entirely fictional."
+    interpretative_label: "Sport / home / Palatinate identity / wine culture"
+    prompt_obverse: "Horned helmet; badminton racket; shuttlecock; simple athletic stance."
+    prompt_reverse: "tower; grapevine/grapes; Dubbeglas; sun; stylised water. Preserve exactly the simplified visual language of Coins I–X."
+    obverse_image: "XI_obverse.png"
+    reverse_image: "XI_reverse.png"
+
+# From the source markdown's "Suggested graph properties" section. Mirrors,
+# in general terms, the per-coin `terminology_graph.relations` authored by
+# hand in data/raw/manual/coin_<ID>.yaml -- kept here too because it is
+# useful on its own as a legend for any new coin's terminology graph.
+suggested_graph_properties:
+  - property: "P45 consists of"
+    target: "Electrum"
+  - property: "P2 has type"
+    target: "E22 Human-Made Object"
+  - property: "P2 has type"
+    target: "Coin"
+  - property: "P62 depicts"
+    target: "concepts described by the obverse/reverse motifs"
+  - property: "P53 has former or current location"
+    target: "modern municipality / site"
+  - property: "findspot"
+    target: "separate fictional archaeological findspot"
+  - property: "metallurgical analysis"
+    target: "fictional measurement/result, explicitly labelled as invented"

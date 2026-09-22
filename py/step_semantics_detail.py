@@ -134,7 +134,7 @@ def _cards(parts: list[str], d: dict, y0: float) -> None:
             cy = link_y
             for chip_label in chips:
                 parts.append(vu.svg_text(x + 14, cy, chip_label, size=12.5, weight=500,
-                                          color=vu.REAL["fill"]))
+                                          color=vu.TERM["fill"]))
                 cy += 19
         elif caption:
             block, _ = vu.svg_text_block(x + 14, link_y + 10, caption, card_w - 28, size=12,
@@ -160,18 +160,24 @@ def _terminology_graph(parts: list[str], d: dict) -> None:
     spine_x = x + 26
     spine_top = y + root_h
 
+    # Node boxes carry only the title; a persistent identifier (when the
+    # relation has one) is printed as a small caption *below* the box, in
+    # muted grey -- matching the reference figure (data/raw/reference/
+    # I_semantics_detail.png) rather than the root box's own convention of
+    # a subtitle baked into the box (root has no external identifier of its
+    # own, so that distinction doubles as "this box IS the object" vs.
+    # "this box names a concept that HAS an identifier").
     relations = d["terminology_graph"]["relations"]
-    rel_ys = []
     cursor = spine_top
     pill_h = 30
-    node_h = 62
+    node_h = 46
     gap_pill_node = 8
-    gap_after_node = 24
+    id_h = 22
+    gap_after_node = 18
     for rel in relations:
         pill_y = cursor + 16
-        rel_ys.append(pill_y)
         node_y = pill_y + pill_h + gap_pill_node
-        cursor = node_y + node_h + gap_after_node
+        cursor = node_y + node_h + (id_h if rel.get("target_subtitle") else 0) + gap_after_node
     spine_bottom = cursor - gap_after_node
 
     parts.append(f'<line x1="{spine_x:.1f}" y1="{spine_top:.1f}" x2="{spine_x:.1f}" '
@@ -181,18 +187,24 @@ def _terminology_graph(parts: list[str], d: dict) -> None:
     for rel in relations:
         pill_y = cursor + 16
         pill_x = spine_x + 18
-        parts.append(f'<line x1="{spine_x:.1f}" y1="{pill_y + pill_h/2:.1f}" '
-                      f'x2="{pill_x:.1f}" y2="{pill_y + pill_h/2:.1f}" '
+        branch_y = pill_y + pill_h / 2
+        parts.append(f'<line x1="{spine_x:.1f}" y1="{branch_y:.1f}" '
+                      f'x2="{pill_x:.1f}" y2="{branch_y:.1f}" '
                       f'stroke="{vu.LINE_NEUTRAL}" stroke-width="1.6" marker-end="url(#arrow)"/>')
+        parts.append(f'<circle cx="{spine_x:.1f}" cy="{branch_y:.1f}" r="3.5" '
+                      f'fill="{vu.LINE_NEUTRAL}"/>')
         chip, chip_w = vu.svg_chip(pill_x, pill_y, rel["property"], vu.PROPERTY, size=13,
                                     h=pill_h, align="start", pad=14)
         parts.append(chip)
 
         node_y = pill_y + pill_h + gap_pill_node
-        parts.append(vu.svg_box(x, node_y, w, node_h, rel["target_label"],
-                                 rel.get("target_subtitle", ""),
+        parts.append(vu.svg_box(x, node_y, w, node_h, rel["target_label"], "",
                                  colors=CATEGORY[rel["category"]]))
-        cursor = node_y + node_h + gap_after_node
+        subtitle = rel.get("target_subtitle", "")
+        if subtitle:
+            parts.append(vu.svg_text(x, node_y + node_h + 17, subtitle, size=12.5,
+                                      color=vu.TEXT_MUTED))
+        cursor = node_y + node_h + (id_h if subtitle else 0) + gap_after_node
 
     legend_y = spine_bottom + 26
     parts.append(vu.svg_legend(x, legend_y, vu.CATEGORY_LABELS, col_w=w / len(vu.CATEGORY_LABELS)))

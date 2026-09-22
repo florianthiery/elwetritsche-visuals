@@ -95,8 +95,8 @@ SUBJECT = {"fill": "#e2e8f0", "stroke": "#94a3b8", "text": "#000000"}
 FICTIONAL = {"fill": "#f7f6f1", "stroke": "#b4b2a7", "text": "#5f5e5a"}
 
 CATEGORY_LABELS = [
-    ("Real object / term", REAL),
-    ("Class (CIDOC-CRM)", CLASS),
+    ("RealObject", REAL),
+    ("Class", CLASS),
     ("Term", TERM),
     ("Property", PROPERTY),
 ]

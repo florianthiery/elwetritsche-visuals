@@ -48,6 +48,23 @@ Zu Beginn jedes Chats hochladen, am Ende zurückschreiben.
   (RealObject grün/Class orange/Term violett/Property amber), aber mit
   dezenter statt schwarzer Kontur — so wie in der genehmigten Referenzgrafik
   `I_semantics_detail.png`, nicht wie im generischen Mermaid-Default.
+- **Nachgebessert per Pixel-Sampling (geprüft 2026-09-22, nach dem ersten
+  Commit):** der erste Nachbau von `I_semantics_detail.png` wich sichtbar
+  von der Referenz ab. Systematisches Pixel-Sampling der Referenzdatei (PIL)
+  ergab drei konkrete Abweichungen, alle in `py/step_semantics_detail.py`
+  bzw. `py/elwetritsche_visuals_utils.py` korrigiert:
+  1. Kennungen in den Attributkarten sind **violett** (`#4C1D95`, Term-Farbe),
+     nicht grün — Zeile 100 unten war falsch und ist korrigiert.
+  2. Legendenbeschriftungen lauten exakt „RealObject / Class / Term /
+     Property" (je ein Wort), nicht die längeren Umschreibungen der ersten
+     Iteration.
+  3. Im Terminologiegraphen steht die Kennung eines Relations-Zielknotens
+     (z. B. „wd:Q239481") **außerhalb/unterhalb** der farbigen Box, in
+     gedecktem Grau — nur der Wurzelknoten trägt seinen Untertitel
+     („(fictional coin)") weiterhin weiß **innerhalb** der Box. Zusätzlich
+     bekam jeder Verzweigungspunkt auf der senkrechten Linie einen kleinen
+     gefüllten Punkt (in der Referenz vorhanden, in der ersten Iteration
+     gefehlt).
 
 ### A2 Zielbild
 
@@ -97,7 +114,8 @@ Eigenschaften:
 | Reihenfolge | zuerst Semantics-Detail-Seite für Münze I reproduzierbar (dieser Chat), danach die Übersichtsgrafik über alle 11 Münzen | 2026-09-22 |
 | Übersichtsgrafik-Stil (Vorschlag) | wie `I_semantics_detail.png`: keine Titel-/Footer-Zeile im SVG, klare Formen, gleiches Farbschema; **kein** Fantasy-Kartenstil wie `reference/I--XI_map.png` | Vorschlag 2026-09-22 |
 | Palette | Mermaid-Hausfarbschema (RealObject grün/Class orange/Term violett/Property amber), Kontur dezent statt schwarz — folgt der genehmigten Referenzgrafik | 2026-09-22 |
-| Kennungs-Darstellung in den Attributkarten | Klartext in Real-Grün untereinander (wie im Original-PIL-Bild), **keine** gefüllten Chips — Chips bleiben den CIDOC-Property-Pills im Terminologiegraphen vorbehalten | 2026-09-22 |
+| Kennungs-Darstellung in den Attributkarten | Klartext in Term-Violett (`#4C1D95`) untereinander (wie im Original-PIL-Bild, per Pixel-Sampling verifiziert — **nicht** Real-Grün, das war die erste, falsche Annahme), **keine** gefüllten Chips — Chips bleiben den CIDOC-Property-Pills im Terminologiegraphen vorbehalten | korrigiert 2026-09-22 |
+| Kennung am Relations-Zielknoten (Terminologiegraph) | kleine Grau-Beschriftung außerhalb/unterhalb der Box, nicht als weißer Untertitel innerhalb — nur der Wurzelknoten (Münze selbst) behält den Untertitel innerhalb der Box | 2026-09-22 |
 | Lizenz der Münzbilder (Vorschlag) | noch nicht bestätigt — AI-generiert vom Repo-Autor, vermutlich CC BY 4.0 wie die übrigen Grafiken; zu bestätigen | Vorschlag 2026-09-22 |
 
 ### A5 Was in welchem Chat hochgeladen wird
@@ -119,12 +137,16 @@ zitierfähige Produkt.
 | S0 | Festlegungen (Technikbasis, Sprache, Reihenfolge, Palette) | — | erledigt 2026-09-22 |
 | S1 | Skelett: main.py, Utils, Rohdaten, Lizenz | S0 | erledigt 2026-09-22 |
 | S-I | Semantics-Detail-Seite Münze I (Pilot) | S1 | erledigt 2026-09-22 |
-| S-II…S-XI | Semantics-Detail-Seiten Münzen II–XI | S-I | offen |
-| S-overview | Übersichtsgrafik über alle 11 Münzen (Fundort vs. moderne Site, stilisierte Karte) | S1 | offen |
+| S-metadata | Serienmetadaten aller 11 Münzen als `data/raw/manual/series_metadata.yaml` | S1 | erledigt 2026-09-22 |
+| S-II…S-XI | Semantics-Detail-Seiten Münzen II–XI | S-I, S-metadata | offen |
+| S-overview | Übersichtsgrafik über alle 11 Münzen (Fundort vs. moderne Site, stilisierte Karte) | S1, S-metadata | offen |
 
-S-II…S-XI und S-overview hängen nur vom Skelett (S1) ab, nicht voneinander,
-und können in beliebiger Reihenfolge angegangen werden; laut A4 zuerst aber
-S-I abschließend prüfen, dann S-overview.
+S-metadata, S-II…S-XI und S-overview hängen nur vom Skelett (S1) ab, nicht
+voneinander, und können in beliebiger Reihenfolge angegangen werden; laut A4
+zuerst aber S-I abschließend prüfen, dann S-overview. S-metadata ist reine
+Datenaufbereitung (keine Grafikausgabe) und war schnell erledigt, sobald S-I
+lief — S-II…S-XI liest sie künftig statt erneut die Markdown-Quelle zu
+parsen.
 
 ---
 
@@ -172,22 +194,68 @@ zweiter Lauf byte-identisch.
 - `py/step_semantics_detail.py` entdeckt `data/raw/manual/coin_*.yaml`
   automatisch (`glob`) — für Münzen II–XI genügt eine neue YAML-Datei, kein
   Codeeingriff.
-- Kennungen in den Attributkarten als Klartext (Real-Grün) statt gefüllter
-  Chips gerendert — entspricht dem Original-PIL-Bild genauer als die erste
+- Kennungen in den Attributkarten als Klartext statt gefüllter Chips
+  gerendert — entspricht dem Original-PIL-Bild genauer als die erste
   Iteration mit `svg_chip`.
 - `svg_image_crop` (aus hdoku26-visuals übernommen) bettet die beiden
   1254×1254-PNGs direkt ein; kein Zwischenschritt nötig.
 - Determinismus geprüft: zwei Läufe, `cmp` auf `.svg` und `.png` ohne
   Ausgabe (byte-identisch).
 
+#### Nachgebessert 2026-09-22 (nach erstem Commit, per Pixel-Sampling-Abgleich)
+
+Der Nutzer meldete, der erste committete Nachbau sehe nicht wie die
+Referenz aus. Ursache und Fix siehe A1 Befunde/A4 (Kennungsfarbe
+Term-Violett statt Real-Grün, Legendentext „RealObject/Class/Term/
+Property", Relations-Kennung außerhalb der Box, Verzweigungspunkt auf der
+Linie ergänzt). Nach dem Fix erneut visuell gegen
+`data/raw/reference/I_semantics_detail.png` abgeglichen (Karten- und
+Graphenbereich Ausschnitt für Ausschnitt) — deckt sich jetzt bis auf die
+bewusste Electron→Electrum-Korrektur (siehe `coin_I.yaml`-Kopfkommentar).
+Determinismus erneut geprüft: zwei Läufe, `cmp` byte-identisch.
+
+### S-metadata — Serienmetadaten als YAML
+
+**Ziel:** alle Prosafelder aus `elwetritsch_coin_series_metadata_v3.md` (pro
+Münze: Identifier, Komposition, Avers/Revers-Beschreibung, moderne Site,
+Fundort, Fundkontext, interpretativer Titel, Prompt) sowie die gemeinsame
+Klassifikation und die „Suggested graph properties" strukturiert in
+`data/raw/manual/series_metadata.yaml` ablegen — damit spätere Schritte
+(S-II…S-XI, S-overview) das nicht erneut aus der Markdown-Datei
+herausparsen müssen.
+
+**Abnahme:** Datei lädt mit `yaml.safe_load`; jeder `site_key` löst gegen
+`sites.yaml` auf, jedes `obverse_image`/`reverse_image` existiert unter
+`data/raw/coins/images/` — beides per Python-Einzeiler geprüft.
+
+#### Erledigt 2026-09-22
+
+- Per Hand transkribiert (wie `sites.yaml`) statt geparst — die Quelle ist
+  Markdown-Prosa mit uneinheitlicher Interpunktion, ein Parser wäre selbst
+  fehleranfälliger als sorgfältiges Abtippen bei nur 11 Einträgen.
+- `composition_text` (Originalstring) **und** `composition_pct`
+  (`{au, ag, cu}`, geparst) parallel abgelegt — spätere Grafiken (z. B. ein
+  Materialdiagramm) brauchen die Zahlen, die Attributkarten weiterhin den
+  Originalstring.
+- `prompt` am Quelltrenner „|" in `prompt_obverse`/`prompt_reverse`
+  gesplittet.
+- Ergänzt `data/raw/README.md` um den Eintrag für diese Datei.
+- Bewusst **kein** Ersatz für `coin_<ID>.yaml`: Letztere bleiben die
+  kuratierte, layoutnahe Quelle für `step_semantics_detail.py` (Kartentexte
+  sind dort kompakter formuliert als die Markdown-Prosa, und die
+  Terminologiegraph-Relationen sind dort Handarbeit, kein 1:1-Abbild der
+  Markdown-Quelle). `series_metadata.yaml` ist die vollständige,
+  quellennahe Ablage daneben.
+
 ### S-II…S-XI — Semantics-Detail-Seiten der übrigen zehn Münzen
 
 **Ziel:** wie S-I, für Münzen II–XI. Je eine `data/raw/manual/coin_<ID>.yaml`
-nach dem Schema von `coin_I.yaml`, transkribiert aus
-`elwetritsch_coin_series_metadata_v3.md`; Terminologiegraph-Relationen pro
-Münze neu überlegen (nicht alle Münzen haben zwingend dieselben sechs
-Relationen wie Münze I — z. B. hat Münze V zwei Herrschaftsattribute, Münze
-X einen Routen-/Pilgerbezug ohne Dubbeglas-Motiv).
+nach dem Schema von `coin_I.yaml`, inhaltlich gestützt auf
+`data/raw/manual/series_metadata.yaml` (S-metadata); Terminologiegraph-
+Relationen pro Münze neu überlegen (nicht alle Münzen haben zwingend
+dieselben sechs Relationen wie Münze I — z. B. hat Münze V zwei
+Herrschaftsattribute, Münze X einen Routen-/Pilgerbezug ohne
+Dubbeglas-Motiv).
 
 **Abnahme:** wie S-I.
 
