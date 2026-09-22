@@ -189,18 +189,41 @@ def xml_escape(s: str) -> str:
     )
 
 
-def text_width(s: str, size: float = 14) -> float:
-    """Rough width estimate. Calibrated 2026-09-22 against a chip caption
-    pixel-measured in the reference figure (data/raw/reference/
-    I_semantics_detail.png: "P53 has former or current location" spans
-    ~271px at this font, i.e. ~0.50*size per character, not the 0.56 this
-    repo started with) -- the old, too-generous factor is what made every
-    property pill read as wider than its text needed, and, combined with
-    the notes captions not being wrapped at all (see ``_cards`` in
-    step_semantics_detail.py), also let long lines run past their card
-    (PRIMER.md A1 Befund, 2026-09-22: user-reported "yellow boxes too
-    long" and "text overflow in boxes")."""
-    return len(s) * size * 0.52
+_FONT_CACHE: dict[tuple[str, int], "ImageFont.FreeTypeFont"] = {}
+
+
+def _pil_font(size: float, weight: int) -> "ImageFont.FreeTypeFont":
+    from PIL import ImageFont
+
+    path = FONT_MEDIUM if weight >= 500 else FONT_REGULAR
+    key = (str(path), round(size * 4))
+    font = _FONT_CACHE.get(key)
+    if font is None:
+        font = ImageFont.truetype(str(path), size=size)
+        _FONT_CACHE[key] = font
+    return font
+
+
+def text_width(s: str, size: float = 14, weight: int = 500) -> float:
+    """Exact rendered width of ``s`` set in Fira Sans at ``size``, measured
+    against the same vendored .ttf resvg-py rasterises with.
+
+    This repo started with a flat per-character estimate (``len(s)*size*
+    k``), first at k=0.56, then retuned to 0.52 against one pixel-measured
+    string. That retuning fixed *that* string and broke others: "P2 has
+    type" is mostly short, narrow characters and renders at barely half
+    what any flat k predicts, so its pill ended up with ~4x more padding
+    on the right than the left, while a longer, more averagely-mixed
+    string is closer to correct (PRIMER.md A1 Befund, 2026-09-22:
+    user-reported "too much whitespace" on the right inside the yellow
+    pills). A flat multiplier cannot fit both -- the character mix varies
+    too much between a two-word property name and a full sentence -- so
+    this measures the real glyph advances from the font file instead, via
+    Pillow (added to requirements.txt for this). Both current call sites
+    (``wrap_lines`` and ``svg_chip``) draw bold/medium (weight 500) text,
+    which is why that is the default rather than a parameter most callers
+    would need to pass."""
+    return _pil_font(size, weight).getlength(s)
 
 
 def svg_text(x: float, y: float, s: str, *, size: float = 13, weight: int = 400,
@@ -216,17 +239,19 @@ def svg_text(x: float, y: float, s: str, *, size: float = 13, weight: int = 400,
 
 
 def wrap_lines(s: str, max_width: float, size: float) -> list[str]:
-    """Greedy word wrap against the rough Fira Sans width estimate.
+    """Greedy word wrap against ``text_width``.
 
-    Wraps a touch earlier than the raw estimate would (a 6% margin on
-    ``max_width``) rather than exactly at it: ``text_width`` is a rough
-    per-character average, and erring towards wrapping one word early is
-    invisible, while erring the other way lets a real line run past its
-    box (PRIMER.md A1 Befund, 2026-09-22: user-reported text overflowing
-    card boxes -- the notes captions that fed this overflow were not even
-    passed through this function before; see ``_cards`` in
-    step_semantics_detail.py)."""
-    budget = max_width * 0.94
+    Keeps a small 2% margin on ``max_width`` rather than wrapping exactly
+    at it -- now that ``text_width`` measures real glyph advances (see
+    its docstring) this is only a guard against resvg-py's own text
+    shaping (kerning, hinting) landing a pixel or two off Pillow's, not a
+    correction for a systematic estimate error: erring towards wrapping
+    one word early is invisible, while erring the other way lets a real
+    line run past its box (PRIMER.md A1 Befund, 2026-09-22: user-reported
+    text overflowing card boxes -- the notes captions that fed this
+    overflow were not even passed through this function before; see
+    ``_cards`` in step_semantics_detail.py)."""
+    budget = max_width * 0.98
     lines: list[str] = []
     current = ""
     for word in s.split():

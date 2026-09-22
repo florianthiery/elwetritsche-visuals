@@ -1,3 +1,8 @@
 # Python >= 3.10
 resvg-py>=0.2      # SVG -> PNG in-process with the vendored Fira Sans
 PyYAML>=6.0        # reads data/raw/manual/*.yaml
+Pillow>=10.0       # measures real glyph widths against the vendored Fira
+                   # Sans .ttf for text wrapping/chip sizing -- a flat
+                   # per-character estimate varied too much between short,
+                   # narrow property names and longer sentences (PRIMER.md
+                   # A1 Befund, 2026-09-22)

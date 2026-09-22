@@ -130,6 +130,8 @@ Eigenschaften:
 | Kennung am Relations-Zielknoten (Terminologiegraph) | kleine Grau-Beschriftung außerhalb/unterhalb der Box, nicht als weißer Untertitel innerhalb — nur der Wurzelknoten (Münze selbst) behält den Untertitel innerhalb der Box | 2026-09-22 |
 | Lizenz der Münzbilder (Vorschlag) | noch nicht bestätigt — AI-generiert vom Repo-Autor, vermutlich CC BY 4.0 wie die übrigen Grafiken; zu bestätigen | Vorschlag 2026-09-22 |
 | Site vs. Fundort (Attributkarten + Terminologiegraph) | zwei getrennte Karten statt einer kombinierten: "Site" (reale moderne Gemeinde, mit wd:/geonames:-Kennung) und "Find spot (fictional)" (erfundener Fundkontext, ohne externe Kennung) — entsprechend ein siebtes Relations-Objekt im Terminologiegraphen (`property: "findspot"`, `property_uri: ""`, da `elwetritsch_coin_series_metadata_v3.md` diese Relation selbst als bespoke/nicht-formal ausweist), Farbe TERM/Violett wie alle anderen Nicht-Wurzel-Knoten. Gilt für alle Münzen (Schema-Entscheidung, nicht nur Münze I). | 2026-09-22 |
+| Textausrichtung im Terminologiegraphen | alle Boxen linksbündig, auch die Wurzelbox ("Elwetritsch stater") — bewusste Abweichung von der alten Referenzgrafik (die die Wurzelbox zentriert zeigt), expliziter Nutzerwunsch | 2026-09-23 |
+| Schriftbreiten-Messung | echte Glyphenbreite aus der vendorten Fira-Sans-.ttf via Pillow statt einer geschätzten Zeichen-Durchschnittsbreite — eine flache Schätzung passt nie gleichzeitig zu kurzen Property-Namen und langen Sätzen (`Pillow` als neue Abhängigkeit in `requirements.txt`) | 2026-09-23 |
 
 ### A5 Was in welchem Chat hochgeladen wird
 
@@ -366,6 +368,54 @@ teilweise über den Kartenrand hinaus.
 - Alle drei Münzen neu gebaut; Kartenzeile und Graph-Ausschnitt je Münze
   visuell geprüft — keine Linie kreuzt mehr Text, keine Karte läuft mehr
   über, Relations-Knoten linksbündig, Pills spürbar schmaler.
+  Determinismus geprüft: zwei Läufe, `cmp` auf alle sechs Dateien (3× SVG
+  + 3× PNG) ohne Ausgabe.
+
+#### Nachgebessert 2026-09-22/23, sechster Durchgang (Kennung-Abstand = Caption-Abstand, Wurzelbox linksbündig, Pill-Vertikalzentrierung, echte Schriftbreiten-Messung)
+
+Nutzerfeedback (nach Commit des fünften Durchgangs): die `wd:...`-Kennung
+in den Karten soll denselben Abstand zur Trennlinie haben wie die
+"cf. real ..."-Caption; die grüne Wurzelbox oben im Graphen soll auch
+linksbündig sein; die Abstände der gelben Pills nach oben/unten passen
+nicht — sollen vertikal zentriert sein; und (Pixel-Nachmessen auf meiner
+Seite, nicht explizit gemeldet, aber derselbe Befund) die Pills selbst
+hatten bei kurzen Property-Namen wie "P2 has type" bis zu 4× mehr
+Weißraum rechts als links.
+
+- **Kennung-Abstand ≠ Caption-Abstand:** beide starteten an
+  unterschiedlichen Offsets von der Trennlinie (Kennung bei +20, Caption
+  bei +30). `_cards()`s `link_y` auf `content_h+44` angehoben (Trennlinie
+  bleibt bei `content_h+14`, beide also jetzt +30) und die Caption
+  benutzt `link_y` direkt statt `link_y+10` — beide Fälle jetzt am
+  selben Abstand. `link_area_h` entsprechend gewachsen, damit der
+  Kartenrand darunter gleich bleibt.
+- **Wurzelbox linksbündig:** `_terminology_graph()` übergibt jetzt auch
+  für die Wurzelbox `align="start"` (bewusste Abweichung von der alten
+  Referenzgrafik, die die Wurzelbox zentriert zeigt — expliziter
+  Nutzerwunsch, in A4 als eigene Zeile festgehalten, siehe unten).
+- **Pills nicht vertikal zentriert:** die beiden Abstände um jeden Pill
+  waren `16` oberhalb (plus zusätzlich `18` aus der vorherigen Relation,
+  also faktisch `34`) gegen nur `8` unterhalb — der Pill hing praktisch
+  am unteren Knoten. Beide Konstanten (`gap_pill_node`, `gap_after_node`)
+  durch eine einzige `gap_v = 16` ersetzt, oben *und* unten am Pill
+  verwendet; die Spline-/Cursor-Fortschreibung in `_terminology_graph()`
+  entsprechend vereinfacht.
+- **Schriftbreiten-Schätzung durch echte Messung ersetzt:** die
+  Nachkalibrierung im fünften Durchgang (0.56→0.52 pro Zeichen) behob
+  einen einzelnen pixel-gemessenen String, verschlimmerte aber andere —
+  "P2 has type" (viele kurze, schmale Zeichen) rendert real bei etwa der
+  Hälfte dessen, was jeder flache Faktor vorhersagt, wodurch dessen Pill
+  im letzten Durchgang links 18px, rechts aber 71px Weißraum hatte. Eine
+  flache Zeichen-Durchschnittsbreite kann Kurztexte und lange Sätze nicht
+  gleichzeitig richtig treffen. `text_width()` misst jetzt die
+  tatsächliche Glyphenbreite aus der vendorten Fira-Sans-.ttf via Pillow
+  (`Pillow>=10.0` zu `requirements.txt` hinzugefügt) statt zu schätzen;
+  `wrap_lines()`s Sicherheitsspanne entsprechend von 6% auf 2% reduziert
+  (jetzt nur noch ein Puffer gegen resvg-py-vs-Pillow-Rendering-Differenzen,
+  keine Korrektur eines systematischen Schätzfehlers mehr).
+- Alle drei Münzen neu gebaut; Pill-Innenabstände beidseitig nachgemessen
+  (z. B. "P2 has type": vorher 18px/71px links/rechts, jetzt 18px/16px) —
+  Kartenzeile und Graph-Ausschnitt je Münze zusätzlich visuell geprüft.
   Determinismus geprüft: zwei Läufe, `cmp` auf alle sechs Dateien (3× SVG
   + 3× PNG) ohne Ausgabe.
 
